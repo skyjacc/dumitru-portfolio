@@ -1,4 +1,4 @@
-/* Articulated resident outside Home. The original Home walker keeps its own controller. */
+/* Articulated resident in Work/Detail only. Home keeps its original walker. */
 (() => {
  'use strict';
  if(!window.StudioCharacterRig||!window.StudioCharacterLife)return;
@@ -25,7 +25,7 @@
  // The removed public pause control no longer persists a preference. Debug pause is session-only.
  const geometry=()=>window.portfolioWorkGeometry?.(),runtime=()=>window.portfolioRuntime,effectiveReduced=()=>reduced.matches||debugReduced;
  const nativeMoving=()=>['work','detail'].includes(mode)&&!!runtime()?.moving;
- const ownsScene=()=>['work','detail','about','process'].includes(mode);
+ const ownsScene=()=>['work','detail'].includes(mode);
  const interactive=()=>ready&&ownsScene()&&!hiddenReason&&!cardBlocked()&&mode!=='detail';
  const busy=()=>!ready||!!window.portfolioEntry?.pending||nativeMoving()||compositionMoving||!!navigationIntent||!!travel&&!travel.signal;
  const canLook=()=>ready&&ownsScene()&&current&&!hiddenReason&&!cardBlocked()&&!document.hidden&&finePointer.matches&&!effectiveReduced()&&!paused&&!externalPause&&!drag&&!selected&&!travel&&!localMotion&&!busy()&&['idle','look','inspect'].includes(lastPose.action);
@@ -176,7 +176,7 @@
    stopTravel();resetInput();clearTimeout(detailTimer);clearTimeout(resizeTimer);clearTimeout(cameraTimer);cancelAnimationFrame(frame);frame=0;
    sceneTarget=null;clearMask();clearFixtures();held=null;hiddenReason=mode==='home'?'home-original':'inactive-section';
    button.dataset.visible='false';button.dataset.interactive='false';button.dataset.mode=mode;button.tabIndex=-1;button.setAttribute('aria-hidden','true');
-   life.stop('home-original');return;
+   life.stop(mode==='home'?'home-original':'inactive-section');return;
   }
   if(changed||force){clearTimeout(detailTimer);detailSignature='';stopTravel();resetInput();sceneTarget=null;clearMask();life.contextChanged();clearFixtures();held=null;hiddenReason=mode==='hidden'?'inactive-section':null;
    if(mode==='work'&&!drag){const target=boardVisited?{anchor:{kind:'world',...world}}:chooseSpot({id:'idle'});if(target){boardVisited=true;if(previous==='hidden'||!current){setAnchor(target.anchor);render(pointOf(anchor))}else void approach(target).then(()=>life.contextChanged())}else hiddenReason='no-safe-space';}

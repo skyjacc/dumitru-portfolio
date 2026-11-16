@@ -24,9 +24,9 @@
 #companion-fixtures { z-index: 35; opacity: 0; visibility: hidden; }
 #companion-fixtures[data-visible=true] { opacity: 1; visibility: visible; }
 #work-companion[data-visible=true] { opacity: 1; visibility: visible; }
-/* No fading second figure on Home: the original walker owns this section. */
-body[data-entry=home] #work-companion,
-body[data-entry=home] #companion-fixtures { display: none; }
+/* The SVG and its props belong only to Work, including opened projects. */
+body:not([data-entry=work]):not([data-entry=detail]) #work-companion,
+body:not([data-entry=work]):not([data-entry=detail]) #companion-fixtures { display: none; }
 #work-companion[hidden], #companion-fixtures[hidden] { display: none; }
 #work-companion .resident-svg,
 #companion-fixtures .resident-svg {

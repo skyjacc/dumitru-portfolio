@@ -4,6 +4,8 @@ Source/review repository. Start with [the handoff guide](docs/HANDOFF.md) for th
 
 Live site: https://dumitru-spatial-portfolio.vercel.app/
 
+Latest character scope: the articulated SVG and its props appear only in Work and opened projects. About and Process stop and hide that controller entirely. Loading/Home keep their original walker. This supersedes older broader section descriptions below.
+
 Run from the repository root with Python 3:
 
 ```sh

@@ -1,5 +1,7 @@
 # Current entry: Loading → Home → Work
 
+Current character scope: `studio-companion.js` owns only `work` and `detail`. CSS immediately hides the SVG/fixtures in all other sections and the controller stops clocks/input there. Home/Loading retain their original walker. Earlier About/Process resident-placement notes below are superseded by this user override.
+
 This guide describes the active entry implemented in `site/entry-flow.js`, `site/entry-flow.css` and the authored `studio-*` modules. It supersedes the Home instructions in `WORKBENCH.md` and the older workbench reapply note in `SURFACES.md`. The earlier sigil and Y2K props are inactive. Home now uses a nine-object paper desk with three scroll compositions; see `PAPER-HOME.md` for current art and motion. Current publication is recorded in `../DEPLOYMENT.md`.
 
 All paths below are relative to the `portfolio-ntch` root unless stated otherwise. The supplied mirror and `site_recon` are reference sources, not edit targets.

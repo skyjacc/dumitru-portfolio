@@ -1,5 +1,7 @@
 # Reviewer handoff
 
+Latest scope override: the SVG character appears only in Work and opened projects. About/Process suspend it completely; Home/Loading retain the original walker. This supersedes the wider section ownership in the earlier implementation notes below.
+
 This repository contains Dumitru's spatial portfolio and the **connected local resident-character implementation**. The articulated rig, scheduler and site coordinator are loaded by both local shells. Whole-site QA is ongoing; this is not a claim that every integration path is verified or that the rewrite is published. Start with [CHARACTER-SYSTEM.md](CHARACTER-SYSTEM.md) for current character ownership and debug tools.
 
 Live reference: [dumitru-spatial-portfolio.vercel.app](https://dumitru-spatial-portfolio.vercel.app/). Publication history is in [DEPLOYMENT.md](../DEPLOYMENT.md); the live site may differ from unpublished work in this checkout.

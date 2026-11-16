@@ -1,5 +1,7 @@
 # Pencil resident — current local system
 
+Latest user override (2026-11-17): the SVG resident owns **Work and Detail only**. About/Process stop its scheduler, frames, fixtures and input; returning to Work restores its board anchor. The original Loading/Home walker remains unchanged. Older About/Process placement details below describe the preceding implementation.
+
 The current checkout preserves the original raster walker in Loading and Home. The articulated resident serves Work, About, Process and decorative project Detail; it is hidden and stopped on Home. The user's latest clarification also removes the public pause button and persisted pause preference. These decisions supersede the corresponding Home-unification and public-control requirements in the preserved [original brief](CHARACTER-IMPLEMENTATION-BRIEF.ru.md). This is a local implementation, not a new production deployment; see [DEPLOYMENT.md](../DEPLOYMENT.md). The latest corrective checks are recorded separately from historical integration results.
 
 ## Run and inspect

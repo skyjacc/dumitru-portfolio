@@ -1,5 +1,11 @@
 # Interaction and motion corrections — 2026-11-17
 
+## Subsequent scope correction
+
+The user subsequently restricted the articulated resident to Work and opened projects. About/Process now hide it and its props immediately, stop the scheduler/RAF and remove its tab stop. The original Home/Loading walker remains unchanged. Focused live-browser navigation verified Work → Process → Work → About → Work → Home: no SVG, timers or input in excluded sections, restored Work anchor and no retired Home controller. The earlier clearance/placement assertions below describe the preceding broader ownership, not the current section scope.
+
+## Earlier interaction correction
+
 Changes in the existing portfolio, following the Home-preservation correction:
 
 - About dismisses through the existing Back transition after a complete click/tap outside the phone. Both pointer endpoints must be outside controls and the phone; drag, photo and navigation gestures are excluded. Work → About → blank tap returns Home.
