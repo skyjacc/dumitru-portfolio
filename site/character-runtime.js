@@ -23,8 +23,11 @@
   const touchQuery = matchMedia('(pointer: coarse)');
   const held = new Set(), obstacles = new Map();
   const maskBuilds = [];
-  let buildingMasks = false;
-  let walker = null, started = false, active = false, returning = false;
+  const lifetime = new AbortController();
+  const listen = (target, name, handler, options = {}) => target.addEventListener(name, handler, { ...options, signal: lifetime.signal });
+  let buildingMasks = false, maskYieldTask = 0, finishMaskYield = null;
+  let walker = null, started = false, active = false, returning = false, retired = false, manuallySuspended = false;
+  let handoff = null, entryObserver = null;
   let x = 0, y = 0, vy = 0, direction = 1, grounded = true;
   let originLeft = 0, width = 80, height = 80 * 803 / 630, floor = innerHeight;
   let frame = IDLE_FRAME, gaitTime = 0, raf = 0, lastTime = 0, idleTask = 0;
@@ -49,7 +52,7 @@
   }
 
   function paint() {
-    if (!walker) return;
+    if (!walker || retired) return;
     walker.style.transform = `translate3d(${x.toFixed(3)}px, ${(-y).toFixed(3)}px, 0)`;
     walker.dataset.frame = String(frame);
     walker.dataset.direction = direction < 0 ? 'left' : 'right';
@@ -86,7 +89,7 @@
   // Listeners are installed before the native portfolio bundle. Outside Home,
   // or while a real control has focus, they leave its keyboard behavior intact.
   function keydown(event) {
-    if (!KEYS.has(event.code) || !started || !active || !home() || touchQuery.matches || document.hidden) return;
+    if (retired || !KEYS.has(event.code) || !started || !active || !home() || touchQuery.matches || document.hidden) return;
     if (uiOwnsKeyboard(event)) { held.clear(); return; }
     event.preventDefault();
     event.stopImmediatePropagation();
@@ -109,15 +112,15 @@
   }
 
   function keyup(event) {
-    if (!KEYS.has(event.code)) return;
+    if (retired || !KEYS.has(event.code)) return;
     held.delete(event.code);
     if (!active || !home() || touchQuery.matches || document.hidden || uiOwnsKeyboard(event)) return;
     event.preventDefault();
     event.stopImmediatePropagation();
     wake();
   }
-  window.addEventListener('keydown', keydown, { capture: true });
-  window.addEventListener('keyup', keyup, { capture: true });
+  listen(window, 'keydown', keydown, { capture: true });
+  listen(window, 'keyup', keyup, { capture: true });
 
   const imageSource = img => [img.src, img.srcset, img.currentSrc].join('\n');
 
@@ -130,27 +133,34 @@
   }
 
   async function drainMaskBuilds() {
-    if (buildingMasks) return;
+    if (retired || buildingMasks) return;
     buildingMasks = true;
     try {
-      while (maskBuilds.length) {
+      while (!retired && maskBuilds.length) {
         // Reading a downsized photo's alpha can still decode/rasterize the
         // full image. Give painting and input a turn between individual masks.
         if (typeof window.scheduler?.yield === 'function') await window.scheduler.yield();
-        else await new Promise(resolve => setTimeout(resolve, 0));
-        maskBuilds.shift()();
+        else await new Promise(resolve => {
+          finishMaskYield = resolve;
+          maskYieldTask = setTimeout(() => { maskYieldTask = 0; finishMaskYield = null; resolve(); }, 0);
+        });
+        // decode()/scheduler.yield() cannot always be aborted. Retirement
+        // invalidates their continuation before it can rasterize or wake RAF.
+        if (retired) break;
+        maskBuilds.shift()?.();
       }
     } finally { buildingMasks = false; }
   }
 
   function createImageMask(entry) {
+    if (retired) return;
     const img = entry.el;
     if (entry.source !== imageSource(img)) resetImageMask(entry);
     if (entry.mask || entry.pending || entry.unreadable) return;
     entry.pending = true;
     const version = entry.version;
     const build = () => {
-      if (version !== entry.version) return;
+      if (retired || version !== entry.version) return;
       entry.pending = false;
       if (!active || !home() || document.hidden || touchQuery.matches || !img.isConnected) return;
       if (entry.source !== imageSource(img)) {
@@ -184,12 +194,16 @@
         entry.unreadable = true;
       }
     };
-    const enqueue = () => { maskBuilds.push(build); drainMaskBuilds(); };
+    const enqueue = () => {
+      if (retired || version !== entry.version) return;
+      maskBuilds.push(build); drainMaskBuilds();
+    };
     if (img.complete && img.naturalWidth) enqueue();
     else img.decode().then(enqueue, () => { if (version === entry.version) entry.pending = false; });
   }
 
   function prepareObstacles() {
+    if (retired) return;
     const root = document.getElementById('studio-home');
     if (root !== deskRoot) {
       deskObserver?.disconnect();
@@ -213,7 +227,7 @@
           if (active) createImageMask(entry);
           refreshDesk();
         };
-        el.addEventListener('load', entry.onLoad);
+        listen(el, 'load', entry.onLoad);
       }
       entry.object = el.closest('.desk-object[data-desk-object]');
       entry.cutout = el.closest('.desk-cutout');
@@ -230,6 +244,7 @@
   }
 
   function refreshDesk() {
+    if (retired) return;
     candidateAt = -Infinity;
     if (!active) return;
     scheduleMasks();
@@ -237,8 +252,8 @@
   }
 
   function scheduleMasks() {
-    if (touchQuery.matches || idleTask) return;
-    const run = () => { idleTask = 0; if (active) prepareObstacles(); };
+    if (retired || !active || document.hidden || touchQuery.matches || idleTask) return;
+    const run = () => { idleTask = 0; if (!retired && active && !document.hidden) prepareObstacles(); };
     idleTask = window.requestIdleCallback ? requestIdleCallback(run, { timeout: 300 }) : setTimeout(run, 0);
   }
 
@@ -358,7 +373,7 @@
 
   function tick(time) {
     raf = 0;
-    if (!active || !home() || document.hidden) return;
+    if (retired || !active || !home() || document.hidden) return;
     const dt = Math.max(0, Math.min((time - lastTime) / 1000, 1 / 30));
     lastTime = time;
     if (held.size && uiOwnsKeyboard()) held.clear();
@@ -426,7 +441,7 @@
   }
 
   function wake() {
-    if (raf || !active || !home() || document.hidden) return;
+    if (retired || raf || !active || !home() || document.hidden) return;
     lastTime = performance.now();
     candidateAt = -Infinity;
     raf = requestAnimationFrame(tick);
@@ -456,7 +471,7 @@
   }
 
   function suspend() {
-    if (!started) return;
+    if (retired || !started) return;
     active = false;
     returning = false;
     stopAnimation();
@@ -465,7 +480,7 @@
   }
 
   function activate(initialPosition) {
-    if (!started || !walker || !home()) return;
+    if (retired || manuallySuspended || !started || !walker || !home()) return;
     active = true;
     walker.hidden = false;
     resetBody();
@@ -483,12 +498,13 @@
   }
 
   function syncEntry() {
-    if (!started) return;
+    if (retired || manuallySuspended || !started) return;
     if (home()) { if (!active) activate(); }
     else if (active || !walker?.hidden) suspend();
   }
 
   function start(options = {}) {
+    if (retired) return getState();
     if (started) return getState();
     walker = document.getElementById('loader-walker');
     if (!walker) return getState();
@@ -500,23 +516,72 @@
   }
 
   function getState() {
-    return Object.freeze({ started, active, home: home(), x, y, vy, frame, direction, returning, grounded,
+    return Object.freeze({ started, active, retired, suspended: manuallySuspended, home: home(), x, y, vy, frame, direction, returning, grounded,
       onPlatform: !!support, width, height, originLeft, viewportX: originLeft + x,
       activated, collisionEnabled, reducedMotion: reducedQuery.matches, touch: touchQuery.matches,
       keyboardEnabled: active && home() && !touchQuery.matches,
       heldKeys: Object.freeze([...held]), candidateCount: candidates.length, nearbyCount: nearby.length,
-      maskCount: [...obstacles.values()].filter(entry => entry.mask).length, animating: !!raf });
+      maskCount: [...obstacles.values()].filter(entry => entry.mask).length, animating: !!raf,
+      idleScheduled: !!idleTask, maskBuildsQueued: maskBuilds.length, buildingMasks });
   }
 
-  window.addEventListener('portfolio:entrystate', syncEntry);
-  window.addEventListener('portfolio:deskready', refreshDesk);
+  // Capture actual rendered geometry before changing visibility. The loader's
+  // translation is not a screen coordinate and must not become a world offset.
+  function retire() {
+    if (retired) return handoff;
+    walker ||= document.getElementById('loader-walker');
+    const rectOf = node => {
+      if (!node) return null;
+      const r = node.getBoundingClientRect();
+      return Object.freeze({ x: r.x, y: r.y, left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height });
+    };
+    const sprite = walker?.querySelector(`.walker-frame[data-pose="${walker.dataset.frame}"]`);
+    handoff = Object.freeze({ ...getState(), rect: rectOf(walker), spriteRect: rectOf(sprite),
+      direction: walker?.dataset.direction === 'left' ? -1 : walker?.dataset.direction === 'right' ? 1 : direction });
+    retired = true;
+    active = false;
+    activated = false;
+    collisionEnabled = false;
+    returning = false;
+    manuallySuspended = false;
+    stopAnimation();
+    lifetime.abort();
+    entryObserver?.disconnect(); entryObserver = null;
+    deskObserver?.disconnect(); deskObserver = null; deskRoot = null;
+    for (const entry of obstacles.values()) { entry.version++; entry.pending = false; entry.mask = null; }
+    obstacles.clear(); maskBuilds.length = 0;
+    if (maskYieldTask) { clearTimeout(maskYieldTask); maskYieldTask = 0; }
+    const finish = finishMaskYield; finishMaskYield = null; finish?.();
+    resetBody();
+    if (walker) {
+      walker.hidden = true;
+      walker.dataset.state = 'retired';
+      walker.dataset.sfActive = 'false';
+      delete walker.dataset.hint;
+    }
+    return handoff;
+  }
+
+  function pauseHome() {
+    if (!retired) { manuallySuspended = true; suspend(); }
+    return getState();
+  }
+
+  function resumeHome() {
+    if (!retired) { manuallySuspended = false; syncEntry(); }
+    return getState();
+  }
+
+  listen(window, 'portfolio:entrystate', syncEntry);
+  listen(window, 'portfolio:deskready', refreshDesk);
   const observeEntry = () => {
-    if (!document.body) return;
-    new MutationObserver(syncEntry).observe(document.body, { attributes: true, attributeFilter: ['data-entry'] });
+    if (retired || !document.body) return;
+    entryObserver = new MutationObserver(syncEntry);
+    entryObserver.observe(document.body, { attributes: true, attributeFilter: ['data-entry'] });
   };
   if (document.body) observeEntry();
-  else document.addEventListener('DOMContentLoaded', observeEntry, { once: true });
-  window.addEventListener('resize', () => {
+  else listen(document, 'DOMContentLoaded', observeEntry, { once: true });
+  listen(window, 'resize', () => {
     if (!active) return;
     const parked = !returning && !activated;
     measure();
@@ -524,16 +589,16 @@
     paint();
     wake();
   });
-  window.addEventListener('blur', () => held.clear());
-  document.addEventListener('focusin', event => { if (uiOwnsKeyboard(event)) held.clear(); });
-  document.addEventListener('visibilitychange', () => {
+  listen(window, 'blur', () => held.clear());
+  listen(document, 'focusin', event => { if (uiOwnsKeyboard(event)) held.clear(); });
+  listen(document, 'visibilitychange', () => {
     if (document.hidden) stopAnimation();
     else if (active) { scheduleMasks(); wake(); }
   });
   const scrollWake = () => { if (active) { scrollAt = performance.now(); wake(); } };
-  window.addEventListener('wheel', scrollWake, { passive: true });
-  window.addEventListener('touchmove', scrollWake, { passive: true });
-  reducedQuery.addEventListener('change', () => {
+  listen(window, 'wheel', scrollWake, { passive: true });
+  listen(window, 'touchmove', scrollWake, { passive: true });
+  listen(reducedQuery, 'change', () => {
     if (!active) return;
     if (reducedQuery.matches && returning) {
       returning = false;
@@ -545,11 +610,11 @@
     }
     wake();
   });
-  touchQuery.addEventListener('change', () => {
+  listen(touchQuery, 'change', () => {
     held.clear();
     if (!touchQuery.matches) scheduleMasks();
   });
-  window.addEventListener('pagehide', stopAnimation);
-  window.addEventListener('pageshow', () => { if (active) { scheduleMasks(); wake(); } });
-  Object.defineProperty(window, 'portfolioCharacter', { value: Object.freeze({ start, getState }) });
+  listen(window, 'pagehide', stopAnimation);
+  listen(window, 'pageshow', () => { if (active) { scheduleMasks(); wake(); } });
+  Object.defineProperty(window, 'portfolioCharacter', { value: Object.freeze({ start, getState, suspend: pauseHome, resume: resumeHome, retire }) });
 })();

@@ -71,6 +71,16 @@ function apply(check=false){
   // Older in-function form accidentally shadowed the view module with time s.
   after=after.replace('c.index>=0&&y(c.index),(0,n.syncVideos)();window.dispatchEvent(new CustomEvent("portfolio:boardframe",{detail:{camera:portfolioDrawCamera,fitScale:(0,s.fitScale)()}}))}',frameNotice);
   replace('native board frame notification','c.index>=0&&y(c.index),(0,n.syncVideos)()}',frameNotice);
+  // Capture the exact shape passed to the native media clip, including the
+  // selected material's current turn/flight geometry, rather than a target box.
+  const contourHelper='/* portfolio-drawn-contour-v1 */let portfolioDrawnFront=null;function portfolioFrontContour(){return portfolioDrawnFront}function portfolioCaptureContour(a,p,w,h,r,shape){if(!a.bare&&a.portfolioFront&&a.portfolioKey===window.portfolioRuntime?.focusedKey)portfolioDrawnFront=Object.freeze({cx:p.x,cy:p.y,width:w,height:h,radius:r,angle:a.angle||0,key:a.portfolioKey,index:a.portfolioIndex,masked:shape!=="object"});return r}/* portfolio-drawn-contour-end */';
+  const contourStart=after.indexOf('/* portfolio-drawn-contour-v1 */');
+  if(contourStart>=0){const marker='/* portfolio-drawn-contour-end */',end=after.indexOf(marker,contourStart);if(end<0)throw Error('Drawn contour end missing');after=after.slice(0,contourStart)+contourHelper+after.slice(end+marker.length)}
+  else replace('drawn contour helper','function portfolioNotifyBoardFrame()',contourHelper+'function portfolioNotifyBoardFrame()');
+  replace('drawn contour export','"boardCamera",()=>portfolioBoardCamera','"frontContour",()=>portfolioFrontContour,"boardCamera",()=>portfolioBoardCamera');
+  replace('clear contour each native frame','portfolioDrawCamera=Object.freeze({x:a.x,y:a.y,zoom:a.zoom});const overviewState','portfolioDrawCamera=Object.freeze({x:a.x,y:a.y,zoom:a.zoom});portfolioDrawnFront=null;const overviewState');
+  replace('identify selected drawn material','angle:(0,h.lerp)(g.angle,0,c),alpha:d*','angle:(0,h.lerp)(g.angle,0,c),portfolioKey:t.key,portfolioIndex:a,portfolioFront:m,alpha:d*');
+  replace('capture native clip radius','let T=C(i,"object"===l?"card":l,y,M,o.WORLD.radius*b),O=','let T=portfolioCaptureContour(a,w,y,M,C(i,"object"===l?"card":l,y,M,o.WORLD.radius*b),l),O=');
   // Visual neighbours, swipe steps and thumbnail numbers share one order.
   replace('sequential material order','let eI=e=>e%2?(e+1)/2:-e/2,eC=','let eI=e=>e/* portfolio-sequential-materials-v1 */,eC=');
   const anchor='function y(e,n){return b(e,t.WORLD.home.x+n.dx,t.WORLD.home.y+n.dy)}';
@@ -81,7 +91,9 @@ function apply(check=false){
       rect=(x,y,width,height)=>Object.freeze({x,y,width,height,left:x-width/2,top:y-height/2,right:x+width/2,bottom:y+height/2}),
       projects=i.BOARD_PROJECTS.filter(p=>p.portfolioCase).map(p=>{const index=(0,i.projectIndex)(p.key),picture=pictures.mainPicture(index),anchor=pictures.pinAnchor(index),at=point(p.pin);let bounds=null;if(picture){const x=innerWidth/2+(picture.cx-t.SCREEN.w/2)*scale,y=innerHeight/2+(picture.cy-t.SCREEN.h/2)*scale,width=Math.max(picture.hw*2*scale,(0,e.i(66658).measureText)(p.name,"500 "+((0,n.isPortrait)()?13:15)+"px PersonalManrope")),height=picture.hh*2*scale,labelBottom=anchor?innerHeight/2+(anchor.bottom-t.SCREEN.h/2)*scale+28:y+height/2;const bottom=Math.max(y+height/2,labelBottom),top=y-height/2;bounds=rect(x,(top+bottom)/2,width,bottom-top)}return Object.freeze({key:p.key,...at,pin:Object.freeze({...p.pin}),bounds})}),
       selected=i.BOARD_PROJECTS.find(p=>p.key===runtime.focusedKey),material=runtime.materialGeometry?.boxes.find(box=>box.front);
-    let front=null;if(selected&&material){const at=point({dx:selected.pin.dx+material.box.x,dy:selected.pin.dy+material.box.y});front=Object.freeze({...rect(at.x,at.y,material.box.w*unitScale,material.box.h*unitScale),key:selected.key,index:material.i})}
+    const drawn=pictures.frontContour?.();let front=null;
+    if(drawn&&drawn.key===selected?.key){const cx=innerWidth/2+(drawn.cx-t.SCREEN.w/2)*scale,cy=innerHeight/2+(drawn.cy-t.SCREEN.h/2)*scale,width=drawn.width*scale,height=drawn.height*scale,radius=drawn.radius*scale,angle=drawn.angle,contour=Object.freeze({cx,cy,width,height,radius,angle});front=Object.freeze({...rect(cx,cy,width,height),key:drawn.key,index:drawn.index,radius,angle,masked:drawn.masked,drawn:true,contour})}
+    else if(selected&&material){const at=point({dx:selected.pin.dx+material.box.x,dy:selected.pin.dy+material.box.y});front=Object.freeze({...rect(at.x,at.y,material.box.w*unitScale,material.box.h*unitScale),key:selected.key,index:material.i,drawn:false})}
     return Object.freeze({...point({dx:0,dy:0}),unitScale,home:Object.freeze({...t.WORLD.home}),projects:Object.freeze(projects),front})
   };/* portfolio-work-geometry-end */`;
   const bridgeStart=after.indexOf('/* portfolio-work-geometry-v1 */');

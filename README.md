@@ -1,6 +1,6 @@
 # Dumitru — spatial portfolio
 
-Private source/review snapshot. Start with [the handoff guide](docs/HANDOFF.md) for the architecture, character integration points and unfinished work.
+Source/review repository. Start with [the handoff guide](docs/HANDOFF.md) for the architecture and [the character system guide](docs/CHARACTER-SYSTEM.md) for the current local resident implementation. The local implementation and targeted browser review are complete; see [the resident review](qa/resident/README.md). These changes have not been deployed to Vercel.
 
 Live site: https://dumitru-spatial-portfolio.vercel.app/
 
@@ -10,7 +10,7 @@ Run from the repository root with Python 3:
 python scripts/serve.py
 ```
 
-The served `site/` contains the required prebuilt native renderer as well as authored JavaScript, CSS and assets. The original upstream React/Next source was not supplied; this is not an npm-buildable source tree. Keep the `_next` files when sharing or running it. `studio-character-life.js` is an **unfinished, unconnected scheduler draft**. The proposed articulated rig has not been implemented. The live character is still in `studio-companion.js`.
+The served `site/` contains the required prebuilt native renderer as well as authored JavaScript, CSS and assets. The original upstream React/Next source was not supplied; this is not an npm-buildable source tree. Keep the `_next` files when sharing or running it. The local character now uses `studio-character-rig.js` for articulated drawing, `studio-character-life.js` for finite activities and `studio-companion.js` for site geometry/input. Both shells and their adapter load these modules. The published site may still show the previous character.
 
 Local preview: http://127.0.0.1:8943/
 
@@ -29,7 +29,8 @@ Five independent concepts: ANDRA, BTB Mobilă, FKD Auto Service, ORA LENTĂ (fic
 ## Interaction
 
 - Home and Work are distinct states. Home wheel/touch and PageUp/PageDown only cycle its three compositions. Laptop/Work explicitly starts a 900ms scatter into the native Work gallery. Return restores the saved interpolated Home arrangement over 700ms. Reduced motion removes these flight durations. The Work pill then provides the project index.
-- Work places the first five projects around an open centre: one above and two mirrored pairs beside/below it. Further projects enter larger rings without moving earlier pins. Portrait overview previews are enlarged independently of the focused material, and all initial cases remain visible. The pencil character can be dragged by mouse/touch, moved with arrow keys, or selected and placed with a second click. Its saved position belongs to the world; dragging it does not pan the camera. On project opening it walks to a safe viewing spot, takes notes after material changes, then rests. Back returns it to the saved Work spot. About and Process remain outside the project field.
+- Work places the first five projects around an open centre: one above and two mirrored pairs beside/below it. Further projects enter larger rings without moving earlier pins. Portrait overview previews are enlarged independently of the focused material, and all initial cases remain visible. The local pencil resident can be dragged by mouse/touch, moved with focused arrow keys, or selected and placed with a second click. Its saved Work position belongs to the world; camera projection alone does not change it. Detail mode is decorative, without pointer interception or tab focus, while the resident observes material changes. Back retains the saved Work location.
+- One resident owns Home/Work/About/Process behavior after Loading. It has 32 rig actions and 27 scheduler activities/reactions, including work, coffee, sketching, exercise, play and project exploration. Thin bowed graphite strokes follow the original walker reference; there are no visible interaction instructions. A localized pause control, reduced-motion branch and visibility cancellation are implemented. Loading keeps the original five raster frames; the old Home controller explicitly retires before the new rig takes over. See [CHARACTER-SYSTEM.md](docs/CHARACTER-SYSTEM.md) for the implementation and verification boundaries.
 - The outer rounded display frame is disabled in every state, including Detail and Process handoffs. The viewport owns one #080808 background; scene opacity fades over 650ms and Process has a guarded exit fade. Work → Process → Work keeps the saved camera. Individual image masks remain intact.
 - Work wheel/drag/pinch changes the camera only, without magnetic object selection or returning to Home. The old central Home hitbox and implicit Home commit path are removed. Home requires its explicit header control or keyboard action.
 - Projects open through the native camera flight. Paper photo thumbnails replace the numbered bottom strip; a paper View site link includes the compact concept/fictional-brand note. The shared upper Back is the only visible return control. Material selection is manual; wheel does not advance materials or unexpectedly close a focused project. Return restores the saved camera, including existing interruption/history protections.
@@ -47,7 +48,7 @@ Five independent concepts: ANDRA, BTB Mobilă, FKD Auto Service, ORA LENTĂ (fic
 python scripts/serve.py
 ```
 
-The server binds only to `127.0.0.1:8943` and serves the shell for `/work/*` routes. The Vercel project is `dumitru-spatial-portfolio`; publication details are in [DEPLOYMENT.md](DEPLOYMENT.md). Only `site/` is published. Adapters, research and QA stay local, and `site/.vercelignore` excludes unused experiments and authoring assets.
+The server binds only to `127.0.0.1:8943` and serves the shell for `/work/*` and `/stories/*` routes. Open [the local character viewer](http://127.0.0.1:8943/__character/) to inspect real-site scenes, contacts, pause/reduced motion and seeded selection. Its UI lives outside `site/` and is injected only by this local server. The Vercel project is `dumitru-spatial-portfolio`; publication details are in [DEPLOYMENT.md](DEPLOYMENT.md). Only `site/` is published. The resident changes described here are local, not a new deployment.
 
 ## Languages
 
@@ -65,6 +66,7 @@ The Kernjosh Loading/Home/Work reference was inspected read-only at `C:/Users/ob
 
 ## Verification
 
+- Current local resident: [rig geometry and visual proof](qa/resident/rig/README.md), [scheduler lifecycle checks](qa/resident/life/README.md), and [integration QA](qa/resident/integration/README.md). Whole-site checks are still being collected; isolated module passes and older character reports do not certify the assembled rewrite or a physical phone.
 - Interactive character and open-centre rings: `qa/interactive-companion/`. Covers spacing and projected bounds, pointer/keyboard movement, finite pose animations, project/material reactions, saved position/camera return and small-screen placement. Earlier inert-character and diamond-layout expectations are superseded.
 - Work field, transitions and paper project controls: `qa/work-redesign/README.md`. Uniform all-state outer framing, guarded Work/Process handoffs, stable diamond growth, three finite companion poses, manual paper thumbnails and portrait caption/footer separation. Final material checks cover all five cases and short/narrow phone viewports; public-release evidence is recorded alongside the report.
 - Project media clarity: `qa/project-clarity/README.md`. All 20 materials checked in mobile Chromium/WebKit; five mobile previews recaptured at DPR 3, FKD desktop/request/summary at DPR 2 without baked browser rails. Logical card sizes remain independent of image density. Whole-page screenshots still contain small text in fit mode; View site opens the full website.

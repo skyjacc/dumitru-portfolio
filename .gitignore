@@ -19,6 +19,8 @@ Thumbs.db
 !/qa/**/*.py
 !/qa/**/*.md
 !/qa/board-follow/manifest.json
+!/qa/resident/rig/index.html
+!/qa/resident/rig/six-poses.png
 
 # Generation job metadata is not needed to run or understand the site.
 /scripts/desk-generation.json

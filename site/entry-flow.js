@@ -70,6 +70,7 @@
  let processReturnMode='home',processOpener=null,processChangedURL=false;
  const composition=()=>window.portfolioComposition;
  const announceTarget=target=>{document.body.dataset.entryTarget=target;dispatchEvent(new CustomEvent('portfolio:entryintent',{detail:{target}}))};
+ const announceSettled=()=>dispatchEvent(new CustomEvent('portfolio:entrysettled',{detail:{mode}}));
  const setMode=(next,restore=true)=>{
   mode=next;document.body.dataset.entry=next;
   if(next!=='about')delete root.dataset.retreat;
@@ -144,14 +145,14 @@
   await new Promise(r=>setTimeout(r,reduced()||fromNative?0:650));if(token!==generation)return;
   window.portfolioProcess?.show({onBack:closeProcess});
   document.getElementById('studio-back')?.focus({preventScroll:true});
-  await spread;if(token!==generation)return;pending=false;
+  await spread;if(token!==generation)return;pending=false;announceSettled();
  }
  async function closeProcess(){
   if(mode!=='process')return;
   const token=++generation;pending=true;
   const target=processReturnMode==='process'?'home':processReturnMode;
   const fading=fadeProcess(token);setMode(target);announceTarget(target);
-  await fading;if(token!==generation)return;pending=false;delete document.body.dataset.entryTarget;if(mode==='home'&&reduced())composition()?.setEnabled(true);
+  await fading;if(token!==generation)return;pending=false;delete document.body.dataset.entryTarget;if(mode==='home'&&reduced())composition()?.setEnabled(true);announceSettled();
   if(processChangedURL){processChangedURL=false;nav({key:'home'});}
   requestAnimationFrame(()=>{if(processOpener?.isConnected&&!processOpener.closest('[inert]'))processOpener.focus({preventScroll:true})});
  }
@@ -173,7 +174,7 @@
    pause(467).then(()=>{if(token===generation)window.portfolioAbout?.show({onBack:closeAbout})})
   ]);
   if(token!==generation)return;
-  pending=false;delete document.body.dataset.entryTarget;
+  pending=false;delete document.body.dataset.entryTarget;announceSettled();
  }
  async function closeAbout(){
   if(mode!=='about'||pending&&document.body.dataset.entryTarget==='home')return;
@@ -198,6 +199,7 @@
   if(!booted||pending)return;
   const fromStudio=['home','process','about'].includes(mode),fromAbout=mode==='about';
   const token=++generation;if(mode!=='detail'&&mode!=='process')origin=mode==='home'?'home':'work';pending=true;
+  announceTarget('detail');
   if(!await waitForNative()){if(token===generation){pending=false;showHome();showFallback()}return}
   if(token!==generation)return;
   if(fromAbout){await retreatPhone(token);if(token!==generation)return;}
@@ -278,7 +280,7 @@
   loadingObserver.disconnect();const ui=document.getElementById('portfolio-ui');if(ui)ui.inert=false;
   if(window.__portfolioLoaderKeyGuard){window.removeEventListener('keydown',window.__portfolioLoaderKeyGuard,true);delete window.__portfolioLoaderKeyGuard}
   booted=true;setMode(pathIsDetail&&nativeReady()?'work':'home');if(!nativeReady())showFallback();
-  const park=()=>{walking=false;cancelAnimationFrame(walkFrameId);window.removeEventListener('resize',measureWalk);loader?.remove();phase='complete';window.portfolioCharacter?.start({x:walkerX,direction});if(pathIsProcess){processChangedURL=true;pending=false;void openProcess();processReturnMode='home';origin='home'}else if(pathIsAbout){root.dataset.paperReveal='done';deskRevealed=true;pending=false;void openAbout()}};
+  const park=()=>{walking=false;cancelAnimationFrame(walkFrameId);window.removeEventListener('resize',measureWalk);loader?.remove();phase='complete';window.portfolioCharacter?.start({x:walkerX,direction});window.dispatchEvent(new CustomEvent("portfolio:loaderhandoff"));if(pathIsProcess){processChangedURL=true;pending=false;void openProcess();processReturnMode='home';origin='home'}else if(pathIsAbout){root.dataset.paperReveal='done';deskRevealed=true;pending=false;void openAbout()}};
   if(walker)walker.dataset.state='leaving';
   if(loader){loader.dataset.ready='true';loader.setAttribute('aria-hidden','true');loader.inert=true}
   if(staticIntro)park();else setTimeout(park,600);

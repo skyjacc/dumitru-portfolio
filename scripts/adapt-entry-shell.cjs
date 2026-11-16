@@ -37,7 +37,7 @@ for(const name of ['index.html','404.html']){const file=path.join(site,name),bef
   s=s.replace(new RegExp('<link rel="stylesheet" href="/'+asset.replace('.','\\.')+'">\\s*','g'),'');
   s=s.replace('</head>',`<link rel="stylesheet" href="/${asset}">\n</head>`);
  }
- for(const asset of ['studio-composition.js','studio-process.js','studio-about.js','studio-clicks.js','studio-nav.js','studio-language.js','studio-companion.js']){
+ for(const asset of ['studio-composition.js','studio-process.js','studio-about.js','studio-clicks.js','studio-nav.js','studio-language.js','studio-character-rig.js','studio-character-life.js','studio-companion.js']){
   s=s.replace(new RegExp('<script src="/'+asset.replace('.','\\.')+'"></script>','g'),'');
   s=s.replace('<script src="/entry-flow.js">',`<script src="/${asset}"></script><script src="/entry-flow.js">`);
  }
