@@ -7,10 +7,10 @@ let pw;try{pw=require('playwright')}catch{pw=require(process.env.PLAYWRIGHT_MODU
   const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
   try{
    await page.goto('http://127.0.0.1:8943'+route);
-   await page.waitForFunction(mode=>portfolioLoader.getState().phase==='complete'&&portfolioEntry.mode===mode&&!portfolioEntry.pending&&(mode!=='detail'||!portfolioRuntime.moving),mode,{timeout:45000});
+   await page.waitForFunction(mode=>portfolioLoader.getState().phase==='complete'&&document.body.dataset.resident==='ready'&&window.portfolioCompanion&&portfolioEntry.mode===mode&&!portfolioEntry.pending&&(mode!=='detail'||!portfolioRuntime.moving),mode,{timeout:45000});
    await page.waitForTimeout(2200);
-   const s=await page.evaluate(()=>({resident:portfolioCompanion.getState(),count:document.querySelectorAll('#work-companion').length,retired:portfolioCharacter.getState().retired,viewer:!!document.getElementById('resident-dev-viewer')}));
-   checks.push({name:route+' has one retired-loader/shared resident in intended context',pass:s.count===1&&s.retired&&s.resident.mode===mode&&!s.resident.life.pauseReasons.includes('input')&&errors.length===0,state:s,errors});
+   const s=await page.evaluate(()=>({resident:portfolioCompanion.getState(),count:document.querySelectorAll('#work-companion').length,original:portfolioCharacter.getState(),originalHidden:document.getElementById('loader-walker').hidden,pausePresent:!!document.getElementById('companion-pause'),viewer:!!document.getElementById('resident-viewer')}));
+   checks.push({name:route+' activates the SVG context while the original Home walker is suspended',pass:s.count===1&&!s.original.retired&&!s.original.active&&s.originalHidden&&!s.pausePresent&&s.resident.mode===mode&&!s.resident.life.pauseReasons.includes('input')&&errors.length===0,state:s,errors});
   }catch(e){checks.push({name:route,pass:false,error:e.message,state:await page.evaluate(()=>({entry:{mode:window.portfolioEntry?.mode,pending:window.portfolioEntry?.pending},loader:window.portfolioLoader?.getState(),native:{moving:window.portfolioRuntime?.moving,key:window.portfolioRuntime?.focusedKey},resident:window.portfolioCompanion?.getState()}))})}
   await page.close();
  }

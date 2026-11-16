@@ -2,10 +2,12 @@ const fs=require('node:fs'),path=require('node:path');
 let pw;try{pw=require('playwright');}catch(_){pw=require('C:/Users/oblako/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules/playwright');}
 (async()=>{
  const b=await pw.chromium.launch({headless:true,channel:'chrome'}),checks=[];
- const expected={en:['Pause character animation','Resume character animation'],ro:['Oprește animația personajului','Reia animația personajului'],ru:['Приостановить анимацию персонажа','Возобновить анимацию персонажа']};
+ // Pause remains a developer API; it must not add a public button in any locale.
  for(const width of [320,390]){
   const p=await b.newPage({viewport:{width,height:844},hasTouch:true});await p.goto('http://127.0.0.1:8943/');
-  await p.waitForFunction(()=>portfolioCharacter.getState().retired,null,{timeout:45000});
+  await p.waitForFunction(()=>portfolioLoader.getState().phase==='complete'&&document.body.dataset.resident==='ready'&&window.portfolioCompanion,null,{timeout:45000});
+  await p.locator('#work-toggle').click();
+  await p.waitForFunction(()=>portfolioEntry.mode==='work'&&!portfolioEntry.pending&&!portfolioRuntime.moving);
   for(const fontSize of ['125%','150%','200%']){
   await p.evaluate(fontSize=>document.documentElement.style.fontSize=fontSize,fontSize);
   for(const locale of ['en','ro','ru']){
@@ -13,11 +15,10 @@ let pw;try{pw=require('playwright');}catch(_){pw=require('C:/Users/oblako/AppDat
    for(const paused of [false,true]){
     await p.evaluate(paused=>portfolioCompanion.pause(paused),paused);
     const data=await p.evaluate(()=>{
-     const q=s=>document.querySelector(s).getBoundingClientRect().toJSON(),n=document.getElementById('companion-pause');
-     return{label:n.getAttribute('aria-label'),pressed:n.hasAttribute('aria-pressed'),pause:q('#companion-pause'),brand:q('#home-control'),language:q('#language-toggle'),nav:q('.portfolio-nav')};
+     const s=portfolioCompanion.getState();
+     return{locale:portfolioI18n.locale,pausePresent:!!document.getElementById('companion-pause'),userPaused:s.life.userPaused,original:portfolioCharacter.getState()};
     });
-    const overlap=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
-    checks.push({name:`${width}px ${locale} ${paused?'resume':'pause'} at ${fontSize}`,pass:data.label===expected[locale][Number(paused)]&&!data.pressed&&[data.brand,data.language,data.nav].every(r=>!overlap(data.pause,r)),data});
+    checks.push({name:`${width}px ${locale} debug pause=${paused} at ${fontSize} leaves public controls unchanged`,pass:data.locale===locale&&!data.pausePresent&&data.userPaused===paused&&!data.original.active&&!data.original.retired,data});
    }
   }}await p.close();
  }

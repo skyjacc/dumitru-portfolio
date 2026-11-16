@@ -8,7 +8,7 @@ let pw;try{pw=require('playwright')}catch{pw=require(process.env.PLAYWRIGHT_MODU
  page.on('pageerror',e=>errors.push(e.message));
  try{
   await page.goto(process.env.REVIEW_ORIGIN||'http://127.0.0.1:8943/');
-  await page.waitForFunction(()=>portfolioLoader.getState().phase==='complete'&&portfolioCharacter.getState().retired);
+  await page.waitForFunction(()=>portfolioLoader.getState().phase==='complete'&&document.body.dataset.resident==='ready'&&window.portfolioCompanion);
   await page.evaluate(()=>{portfolioCompanion.seed(21);portfolioCompanion.pause(false);portfolioEntry.enterWork()});
   await page.waitForFunction(()=>portfolioEntry.mode==='work'&&!portfolioEntry.pending&&!portfolioRuntime.moving);
   for(let n=0;n<9;n++){

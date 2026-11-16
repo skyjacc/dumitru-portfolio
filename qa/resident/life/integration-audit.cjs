@@ -11,10 +11,12 @@ const hashes=()=>Object.fromEntries(files.map(file=>[file,crypto.createHash('sha
  page.on('pageerror',error=>report.errors.push(error.message));
  const check=(name,pass,data)=>{report.checks.push({name,pass:!!pass,data});console.log(`${pass?'PASS':'FAIL'} ${name}`)};
  const state=()=>page.evaluate(()=>portfolioCompanion.getState());
+ const owners=()=>page.evaluate(()=>({original:portfolioCharacter.getState(),resident:portfolioCompanion.getState(),originalHidden:document.getElementById('loader-walker').hidden}));
+ const originalOwnsHome=s=>s.original.active&&!s.original.retired&&!s.originalHidden&&!s.resident.active&&!s.resident.life.running&&!s.resident.frameScheduled&&!s.resident.life.frameScheduled&&!s.resident.life.timerScheduled;
  const settle=mode=>page.waitForFunction(mode=>portfolioEntry.mode===mode&&!portfolioEntry.pending&&!portfolioRuntime.moving,mode,{timeout:30000});
  async function load(){
   await page.goto(origin+'/?review=life-integration');
-  await page.waitForFunction(()=>window.portfolioCompanion&&portfolioLoader.getState().phase==='complete'&&portfolioCharacter.getState().retired,null,{timeout:45000});
+  await page.waitForFunction(()=>window.portfolioCompanion&&portfolioLoader.getState().phase==='complete'&&document.body.dataset.resident==='ready',null,{timeout:45000});
   await settle('home');await page.waitForTimeout(2000);
   await page.evaluate(()=>{StudioCharacterLife.config.initialDelay=[100000,100000];portfolioCompanion.pause(false);});
  }
@@ -22,14 +24,14 @@ const hashes=()=>Object.fromEntries(files.map(file=>[file,crypto.createHash('sha
   await load();
   await page.emulateMedia({reducedMotion:'reduce'});await page.waitForTimeout(200);
   await page.locator('body').focus();await page.keyboard.press('w');await page.waitForTimeout(100);
-  const reducedW=await state();
-  check('reduced-motion W does not leave the direct-control drag latch set',!reducedW.life.pauseReasons.includes('drag'),reducedW);
+  const reducedW=await owners();
+  check('Home W remains owned by the original walker with no SVG activity',originalOwnsHome(reducedW)&&reducedW.original.activated&&reducedW.original.reducedMotion&&!reducedW.original.heldKeys.length,reducedW);
 
   await load();await page.emulateMedia({reducedMotion:'no-preference'});await page.waitForTimeout(400);
   await page.locator('body').focus();await page.keyboard.down('d');await page.waitForTimeout(100);
   await page.emulateMedia({reducedMotion:'reduce'});await page.keyboard.up('d');await page.waitForTimeout(100);
-  const reducedDuringMove=await state();
-  check('enabling reduced motion during keyboard movement releases direct-control ownership',!reducedDuringMove.life.pauseReasons.includes('drag'),reducedDuringMove);
+  const reducedDuringMove=await owners();
+  check('changing reduced motion during Home movement leaves the original owner and clears held keys',originalOwnsHome(reducedDuringMove)&&reducedDuringMove.original.activated&&reducedDuringMove.original.reducedMotion&&!reducedDuringMove.original.heldKeys.length,reducedDuringMove);
   await load();await page.emulateMedia({reducedMotion:'no-preference'});await page.waitForTimeout(400);
   await page.locator('#work-toggle').click();await settle('work');await page.waitForTimeout(2000);
   await page.locator('#work-companion').focus();await page.keyboard.press('ArrowRight');
@@ -44,8 +46,8 @@ const hashes=()=>Object.fromEntries(files.map(file=>[file,crypto.createHash('sha
   await page.evaluate(()=>portfolioEntry.showHome());await settle('home');await page.waitForTimeout(2000);
   await page.locator('body').focus();await page.keyboard.down('d');await page.waitForTimeout(100);
   await page.evaluate(()=>portfolioEntry.open('process'));await page.keyboard.up('d');await settle('process');await page.waitForTimeout(1500);
-  const afterKeyNavigation=await state();
-  check('section navigation while holding D does not strand input ownership',!afterKeyNavigation.life.pauseReasons.includes('drag'),afterKeyNavigation);
+  const afterKeyNavigation=await owners();
+  check('leaving Home while holding D suspends its controller and releases SVG input ownership',!afterKeyNavigation.original.active&&!afterKeyNavigation.original.retired&&afterKeyNavigation.originalHidden&&!afterKeyNavigation.original.heldKeys.length&&!afterKeyNavigation.original.animating&&afterKeyNavigation.resident.mode==='process'&&!afterKeyNavigation.resident.life.pauseReasons.includes('drag'),afterKeyNavigation);
 
   await page.evaluate(()=>{
    StudioCharacterLife.config.timeScale=.22;

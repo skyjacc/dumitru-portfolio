@@ -1,6 +1,6 @@
 # Pencil resident — current local system
 
-The current checkout connects one articulated resident across Home, Work, About, Process and decorative project Detail. This is a **local implementation with completed targeted integration QA**, not a new production deployment. The production history remains in [DEPLOYMENT.md](../DEPLOYMENT.md). The full requested behavior is recorded in [CHARACTER-IMPLEMENTATION-BRIEF.ru.md](CHARACTER-IMPLEMENTATION-BRIEF.ru.md); a requirement in that document is not, by itself, proof of a passing implementation.
+The current checkout preserves the original raster walker in Loading and Home. The articulated resident serves Work, About, Process and decorative project Detail; it is hidden and stopped on Home. The user's latest clarification also removes the public pause button and persisted pause preference. These decisions supersede the corresponding Home-unification and public-control requirements in the preserved [original brief](CHARACTER-IMPLEMENTATION-BRIEF.ru.md). This is a local implementation, not a new production deployment; see [DEPLOYMENT.md](../DEPLOYMENT.md). The latest corrective checks are recorded separately from historical integration results.
 
 ## Run and inspect
 
@@ -24,14 +24,14 @@ The viewer is injected by the local Python server from `qa/resident/viewer.js`; 
 | --- | --- |
 | `site/studio-character-rig.js` | One 120×200 articulated SVG skeleton, 32 actions, stable segments, pose rendering, contact/prop metrics and separate body/grip groups. No RAF or timers. |
 | `site/studio-character-life.js` | 27 activities/reactions, one phase clock, finite preparation/performance/finish, weighted choice, history, cooldowns, priorities and effective pause. |
-| `site/studio-companion.js` | Sole position/input owner after Loading: section context, real world/DOM anchors, approaches, drag/keyboard motion, masks, furniture anchors and public observation/debug API. |
-| `site/studio-companion.css` | Pencil color/line scaling, narrow stroke hit regions, focus styling, decorative Detail mode and the localized pause control. |
-| `site/character-runtime.js` | Original legacy raster controller retained for compatibility; explicit `retire()` releases its events, observers, RAF and pending mask work. |
+| `site/studio-companion.js` | SVG position/input owner in Work/About/Process/Detail: world/DOM anchors, approaches, drag/keyboard motion, masks, furniture and observation/debug API. Stopped and noninteractive on Home. |
+| `site/studio-companion.css` | Pencil color/line scaling, narrow stroke hit regions, focus styling, decorative Detail mode and immediate SVG hiding on Home. No public pause control. |
+| `site/character-runtime.js` | Original Home raster controller. It self-activates on Home and suspends elsewhere; its optional `retire()` API is not called by normal entry/navigation. |
 | `site/entry-flow.js` | Actual loader readiness and `portfolio:loaderhandoff`, plus existing Home/Work/About/Process navigation. |
 | `site/index.html`, `site/404.html`, `scripts/adapt-entry-shell.cjs` | Load rig and life before the coordinator in both normal and direct-route shells. |
 | `scripts/serve.py`, `qa/resident/viewer.js` | Local-only developer viewer; no public debug panel. |
 
-Do not restore the old five whole-body SVG pose groups or enable the old Home controller alongside the new coordinator. The underlying compiled renderer in `site/_next/` remains required; this implementation does not introduce a React/Next build step or replace the native project camera.
+Do not restore the old five whole-body SVG pose groups or let both controllers render/intercept input in the same section. Home belongs to the original walker; the SVG coordinator must yield completely there. The underlying compiled renderer in `site/_next/` remains required; this implementation does not introduce a React/Next build step or replace the native project camera.
 
 ## Appearance and geometry
 
@@ -40,6 +40,8 @@ The latest visual direction is the original figure on the left of the user's com
 The authored figure has an irregular tilted oval, one bowed torso line, long thin limbs, tiny asymmetrical hand/foot strokes and muted graphite color. Contour curves pass through stable joints. There are no facial features, clothes, filled torso, repeated outlines, glow or random per-frame jitter. Furniture and props use the same restrained line treatment. The original asset provenance remains in `site/hero/walker/SOURCE.txt`.
 
 The external box remains 120×200 with floor at local y=188. Torso, upper arm, forearm, thigh and shin lengths are 50, 28, 27, 36 and 38 local units respectively. IK reaches planted contacts; FK arcs handle bend-side transitions. The rig handles facing reflection internally around x=60, including furniture when created. The coordinator must not add another horizontal flip.
+
+Fine-pointer tracking adds a small, smoothed head/neck offset in idle/look/inspect without moving the torso, hands or board anchor. Screen direction is converted to facing-local coordinates once. The finite interpolation stops after settling; pointer exit/blur restore neutral. Home, coarse pointers, reduced motion, developer pause, active manipulation and contact-sensitive scenes do not use this tracking.
 
 Line scaling has one owner. The rig does not use `vector-effect: non-scaling-stroke`; the connected CSS/coordinator may supply inverse-scale stroke width. Do not stack both compensation methods.
 
@@ -66,7 +68,7 @@ Project keys determine motifs: ANDRA can fetch/place a flower; BTB can measure; 
 
 The scheduler supplies phase-local `progress` (0–1), `elapsed` (milliseconds), variant, repeat count, scene ID and unique token. Re-rendering the rig at the same inputs does not advance a phase. `portfolio:boardframe` updates the position against the camera already drawn; it does not tick animation time a second time.
 
-The coordinator has finite motion frames only for actual approach, drag/landing, Home keyboard motion or jump. Quiet scheduler rest uses a bounded timer, not an idle redraw loop. Hidden/reduced/input-busy state is reconciled before any continuation.
+The SVG coordinator has finite motion frames only for actual approach and drag/landing. Home movement/jump remains in the original raster controller. Quiet scheduler rest uses a bounded timer, not an idle redraw loop; on Home the SVG scheduler is stopped entirely. Hidden/reduced/input-busy state is reconciled before any continuation.
 
 `portfolio:entrysettled` reconciles DOM scene completion after entry clears its pending flag. Hidden native camera flights do not block Home/About/Process: `runtime.moving` is relevant only to Work/Detail. In Detail, changing actual front-card geometry triggers a bounded settle check so paused/reduced characters are repositioned safely as well.
 
@@ -80,7 +82,7 @@ Normal soft interruption finishes a safe movement within the configured limit; d
 | --- | --- |
 | Work | Saved world position/size projected through `portfolioWorkGeometry()` and the native rendered camera. Pan/zoom alone does not rewrite the world position or clamp it to the viewport. |
 | Detail | Selected material's current `front` rectangle and a safe side/height anchor. Decorative only: no tab focus or pointer interception. |
-| Home | Safe screen positions or offsets from actual `[data-desk-object]` rectangles; keyboard movement can use eligible object supports. |
+| Home | Original raster controller and original Home controls; no SVG placement, scheduler activity or input interception. |
 | About / Process | Measured safe screen/DOM positions outside the profile, copy, controls and navigation. |
 | Viewport peek | Explicit viewport-edge anchor; it is not an accidentally fixed Work character. |
 
@@ -100,13 +102,13 @@ Completed coffee/flower fixtures can remain during quiet idle/look/nod/wave. The
 
 ## Loading handoff and input
 
-Loading retains the original five frames, original bubble and existing readiness/failure behavior. On `portfolio:loaderhandoff`, the coordinator calls `portfolioCharacter.retire()` before taking over. The legacy controller returns the actual sprite/host screen rectangles and direction, aborts its input listeners and observers, cancels queued work and hides the old raster. Its local CSS `walkerX` is not reused as a screen/world coordinate.
+Loading retains the original five frames, original bubble and existing readiness/failure behavior. Entry starts `portfolioCharacter` as before; its section listener and body-state observer keep the original walker active only on Home. `portfolio:loaderhandoff` marks the SVG coordinator ready without calling `retire()` or copying the raster's position. The SVG remains stopped/hidden on Home, initializes its own section placement elsewhere and yields again on Back. Its Work position is never derived from the loader's CSS `walkerX`.
 
-The shared resident supports pointer capture and grab offset, click-to-place, focused arrow movement, Shift for larger movement and Escape cancellation. Home also has A/D or left/right motion and W/Space/up jump when a real control does not own the keys. Menus, text fields and navigation keep their own keyboard behavior. Direct-detail interaction remains disabled.
+The SVG resident supports pointer capture and grab offset, click-to-place, focused arrow movement, Shift for larger movement and Escape cancellation in eligible sections. Home A/D or left/right motion and W/Space/up jump belong only to the original controller; the SVG does not install a competing Home movement path. Menus, text fields and navigation keep their own keyboard behavior. Direct-detail interaction remains disabled.
 
-Only transparent strokes around the actual head/body opt into pointer input; furniture and the empty rectangular SVG area do not form an invisible panel. There are no public Drag-me, Click-me or above-head movement instructions. Localized accessible labels, live movement/cancellation announcements and focus styling remain.
+Only transparent strokes around the SVG head/body opt into pointer input; furniture and the empty rectangular SVG area do not form an invisible panel. The SVG has no public Drag-me, Click-me or above-head movement instructions. Its localized accessible labels, live movement/cancellation announcements and focus styling remain. The original Home controls/hints remain unchanged.
 
-A persistent localized pause control stops autonomous character animation. User pause, external pause, hidden document, drag and input-busy reasons are composed. Clearing one reason does not clear the others. Reduced motion keeps a static stance/necessary short response and does not resume an ordinary animation loop after a pause. Visibility return uses the latest context without replaying a backlog.
+There is no visible public pause button and no persisted character-pause preference. The session-only developer `pause()` API remains available, along with external pause, hidden-document, drag and input-busy causes. Clearing one cause does not clear the others. Reduced motion keeps a static stance/necessary short response and does not resume an ordinary animation loop after a pause. Visibility return uses the latest context without replaying a backlog.
 
 ## Tuning and observation
 
@@ -120,6 +122,6 @@ A persistent localized pause control stops autonomous character animation. User 
 
 - [Rig review](../qa/resident/rig/README.md): six poses beside the original at real interface scale, all-action silhouettes, fixed segments, contacts, wrist props, ownership interruption and deterministic frames.
 - [Scheduler review](../qa/resident/life/README.md): deterministic clock, weighted availability, independent pause causes, stale approach protection, reduced motion and flower-story lifecycle.
-- [Integration review](../qa/resident/integration/README.md): legacy retirement and ongoing real-page browser checks/captures under `connected/` and `scenes/`.
+- [Integration review](../qa/resident/integration/README.md): latest Home-preservation/no-public-pause checks and separately labeled historical retirement/shared-owner checks under `connected/` and `scenes/`.
 
 Whole-site QA is still being completed. Do not substitute isolated passing counts, historical `qa/board-follow/` or legacy `qa/full-character/` for a fresh navigation/input/mask review. Chromium/WebKit emulation is not physical-device testing. Current assertions and any unresolved observations belong in the integration report; publication status belongs in DEPLOYMENT.md.

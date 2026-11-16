@@ -58,12 +58,20 @@ async function drag(page, spec, start, dx, dy, held) {
       await page.goto(origin + '/?character-debug=1&review=resident');
       await page.waitForFunction(() => portfolioEntry?.ready && portfolioLoader.getState().phase === 'complete', null, {timeout: 45000});
       await settle('home');
-      await page.waitForFunction(() => portfolioCharacter.getState().retired && portfolioCompanion.getState().mode === 'home');
-      check('Loading transfers control to one resident', await page.evaluate(() => portfolioCharacter.getState().retired && document.getElementById('loader-walker').hidden && document.querySelectorAll('#work-companion').length === 1));
+      await page.waitForFunction(() => document.body.dataset.resident === 'ready' && portfolioCompanion.getState().mode === 'home');
+      check('Loading preserves the original Home walker and keeps the SVG inactive', await page.evaluate(() => {
+        const old = portfolioCharacter.getState(), c = portfolioCompanion.getState(), walker = document.getElementById('loader-walker');
+        return old.active && !old.retired && !walker.hidden && getComputedStyle(walker).display !== 'none' && !c.active && !c.life.running && !c.frameScheduled && document.querySelectorAll('#work-companion').length === 1;
+      }));
+      check('no public pause control is inserted', await page.locator('#companion-pause').count() === 0);
       check('public resident control API exists', await page.evaluate(() => ['play', 'pause', 'refresh', 'getState'].every(key => typeof portfolioCompanion[key] === 'function')));
       await page.evaluate(() => portfolioCompanion.pause(true));
       await page.locator('#work-toggle').click(); await settle('work');
       await residentSettled();
+      check('Work suspends the original Home controller without retiring it', await page.evaluate(() => {
+        const old = portfolioCharacter.getState();
+        return !old.active && !old.retired && !old.animating && document.getElementById('loader-walker').hidden && portfolioCompanion.getState().life.running;
+      }));
       const initial = await takeState(page);
       await page.evaluate(() => {
         window.__residentFollow = [];
@@ -88,6 +96,10 @@ async function drag(page, spec, start, dx, dy, held) {
       const samples = await page.evaluate(() => __residentFollow);
       check('every sampled board frame uses the rendered camera', samples.length > 5 && samples.every(sample => sample.error < .1), {count: samples.length, maximumError: Math.max(0, ...samples.map(sample => sample.error))});
       await page.evaluate(() => portfolioEntry.showHome()); await settle('home');
+      check('returning Home restores the original walker and stops SVG activity', await page.evaluate(() => {
+        const old = portfolioCharacter.getState(), c = portfolioCompanion.getState();
+        return old.active && !old.retired && !document.getElementById('loader-walker').hidden && !c.active && !c.life.running && !c.frameScheduled && !c.life.frameScheduled && !c.life.timerScheduled;
+      }));
       await page.locator('#work-toggle').click(); await settle('work');
       await residentSettled();
       const beforeDrag = await takeState(page), point = await bodyPoint(page);
@@ -119,7 +131,10 @@ async function drag(page, spec, start, dx, dy, held) {
       await page.locator('#process-control').click(); await settle('process');
       await page.locator('#work-toggle').click(); await settle('work');
       await residentSettled();
-      check('mode transitions retain one owner and release interaction state', await page.evaluate(() => portfolioCharacter.getState().retired && !portfolioCompanion.getState().dragging && portfolioCompanion.getState().mode === 'work'));
+      check('mode transitions retain one visible owner and release interaction state', await page.evaluate(() => {
+        const old = portfolioCharacter.getState(), c = portfolioCompanion.getState();
+        return !old.retired && !old.active && document.getElementById('loader-walker').hidden && !c.dragging && c.mode === 'work' && !document.getElementById('companion-pause');
+      }));
 
       await page.emulateMedia({reducedMotion: 'reduce'});
       await page.evaluate(() => portfolioCompanion.pause(false));

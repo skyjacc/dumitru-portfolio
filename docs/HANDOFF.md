@@ -29,9 +29,11 @@ There is currently **no package.json, npm install step, or npm build**. The orig
 - Loading → Home: paper objects around the introduction; scrolling changes the composition. The laptop/Work control explicitly enters the project field.
 - Work: five independent portfolio concepts with pan/zoom, manual project opening and material selection. Back restores the previous camera. New project placement uses expanding rings.
 - About: the same Home phone approaches the camera and reveals HTML text and photos inside its screen. Process is a separate HTML panel in the desk composition.
+- About closes to Home through Back on a complete blank-space tap outside the phone. Phone/photo gestures, navigation controls and drags are excluded. Work has no dropdown: it toggles Home/Work, and returns an open project to its saved gallery camera.
 - English is the default, followed by Romanian and Russian. Contact opens a mail client; there is no contact submission backend.
-- After Loading, one articulated pencil resident owns Home/Work/About/Process behavior and observes Detail decoratively. Its Work position belongs to the board; Home and section activities use safe screen/object anchors. Pointer/keyboard interaction is available in eligible modes, while Detail has no tab stop or pointer interception. The original five Loading frames remain; the legacy Home controller retires explicitly at handoff.
+- Loading and Home preserve the original raster walker and Home controls. `character-runtime.js` self-activates on Home and suspends elsewhere; normal navigation does not retire it. The articulated resident owns Work/About/Process and observes Detail decoratively; it is stopped, hidden and noninteractive on Home. Its Work position belongs to the board, with safe section anchors elsewhere. Detail has no tab stop or pointer interception. The user's latest clarification removes the public pause button and persisted pause preference; developer pause and reduced motion remain.
 - The local rig has 32 drawing actions and the scheduler has 27 activities/reactions with preparation, performance, finish and rest. Scene availability still depends on section, space and preferences. The latest visual direction follows the original left-hand reference: irregular tilted head, bowed single-line limbs and muted graphite rather than bright beige geometry.
+- The latest motion correction adds prone pushup preparation/exit, a clearer coffee grip, a two-handed horizontal ruler and subtle mouse head tracking in quiet poses. The resident yields during phone/Process motion and revalidates content clearance afterward. Current evidence and limits: [interaction corrections](../qa/resident/INTERACTION-CORRECTIONS.md).
 
 ## Code map
 
@@ -47,8 +49,8 @@ There is currently **no package.json, npm install step, or npm build**. The orig
 | [site/portfolio-i18n.js](../site/portfolio-i18n.js), [site/studio-language.js](../site/studio-language.js) | Locale handling and short label transitions. |
 | [site/studio-character-rig.js](../site/studio-character-rig.js) | Shared articulated SVG skeleton, contacts, props and 32 drawing actions. |
 | [site/studio-character-life.js](../site/studio-character-life.js) | Weighted 27-activity scheduler, one scene clock, phase tokens, cancellation and pause. |
-| [site/studio-companion.js](../site/studio-companion.js), [site/studio-companion.css](../site/studio-companion.css) | Connected resident coordinator: section/world anchors, input, masks, fixtures, pause UI and legacy handoff. |
-| [site/character-runtime.js](../site/character-runtime.js) | Original raster controller retained for compatibility; `retire()` cancels ownership at the new resident handoff. |
+| [site/studio-companion.js](../site/studio-companion.js), [site/studio-companion.css](../site/studio-companion.css) | SVG resident outside Home: section/world anchors, input, masks, fixtures and developer pause. No public pause UI. |
+| [site/character-runtime.js](../site/character-runtime.js) | Original Home raster controller; automatically activates on Home and suspends in other sections. Normal navigation does not call `retire()`. |
 | [scripts/adapt-work-composition.cjs](../scripts/adapt-work-composition.cjs) | Bounded native edits for project rings, captions, material order and geometry exports. |
 | [scripts/adapt-entry-shell.cjs](../scripts/adapt-entry-shell.cjs) | Reapplies authored script/style references and loader to both shells. |
 
@@ -67,7 +69,7 @@ Read [scripts/ENTRY.md](../scripts/ENTRY.md) before modifying native adapters. D
 | --- | --- |
 | `portfolio:entrystate` | `{mode}`; entry navigation state. |
 | `portfolio:entryintent` | `{target}`; cancel stale scene intentions before a section transition completes. |
-| `portfolio:loaderhandoff` | Original Loading presentation has finished; retire the legacy controller and transfer rendered geometry. |
+| `portfolio:loaderhandoff` | Loading has finished and the original Home controller has started; mark the SVG coordinator ready without retiring or replacing the Home walker. |
 | `portfolio:compositionmotion` | `{active, phase}`; Home object motion. |
 | `portfolio:projectstate` | `{key, materialIndex, moving, mode}`; discrete native selection updates. |
 | `portfolio:boardframe` | `{camera, fitScale}`; synchronous notification after native draw, suitable for exact board-follow positioning. |
@@ -87,10 +89,10 @@ Implementation and review boundaries:
 2. Work projection retains saved world position/size and uses the camera actually rendered. Parent/child coordinate transforms and Back restoration need their current integration evidence, not only older board-follow results.
 3. Direct input, soft exits, navigation invalidation and token-owned cleanup are implemented. Review both held props and independently anchored furniture under interruption.
 4. Native cards still share a canvas: the coordinator builds a geometric inverse mask rather than relying on DOM z-index alone. Check actual rounded contours during movement and resize.
-5. Localized pause, reduced motion, hidden-page cancellation, keyboard control and stroke-only hit regions are connected. Detail is decorative. Verify safe placement and accessibility at short/narrow viewports and enlarged text.
-6. The local `/__character/` viewer exercises the actual page. [Scheduler checks](../qa/resident/life/README.md) and [integration reports](../qa/resident/integration/README.md) distinguish isolated assertions from assembled browser observations. The completed local review is recorded in [qa/resident/README.md](../qa/resident/README.md); no production deployment or physical-device certification is implied.
+5. Developer pause, reduced motion, hidden-page cancellation, keyboard control and stroke-only hit regions remain connected. The public pause button/persisted preference were removed at the user's request. Detail is decorative; Home input belongs only to the original controller. Verify safe placement at short/narrow viewports and enlarged text.
+6. The local `/__character/` viewer exercises the actual page. [Scheduler checks](../qa/resident/life/README.md) and [integration reports](../qa/resident/integration/README.md) distinguish isolated assertions from assembled browser observations. [qa/resident/README.md](../qa/resident/README.md) separates historical results from the latest Home-preservation/no-public-pause checks; no production deployment or physical-device certification is implied.
 
-The existing original walker frames are in `site/hero/walker/`; provenance is recorded in its `SOURCE.txt`. They remain the Loading artwork and appearance reference. Motion mini is already vendored for language-label transitions; the resident uses authored SVG/JavaScript without a new animation dependency. Full implementation requirements are recorded in [CHARACTER-IMPLEMENTATION-BRIEF.ru.md](CHARACTER-IMPLEMENTATION-BRIEF.ru.md).
+The existing original walker frames are in `site/hero/walker/`; provenance is recorded in its `SOURCE.txt`. They remain the Loading and Home artwork and the SVG appearance reference. Motion mini is already vendored for language-label transitions; the resident uses authored SVG/JavaScript without a new animation dependency. The preserved [original brief](CHARACTER-IMPLEMENTATION-BRIEF.ru.md) predates the user's Home-preservation and no-public-pause overrides documented here.
 
 ## Verification boundaries
 

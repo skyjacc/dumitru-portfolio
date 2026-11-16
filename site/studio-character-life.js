@@ -14,7 +14,7 @@
   define('work','work',ordinary,8,[12000,25000],{space:'desk',props:['laptop','chair'],cooldown:60000});
   define('game','play',ordinary,2,[11000,17000],{space:'desk',props:['laptop','chair'],cooldown:110000});
   define('coffee','rest',ordinary,5,[5000,8000],{space:'small',props:['mug'],cooldown:42000});
-  define('pushups','exercise',ordinary,1.1,[8000,12000],{space:'wide',cooldown:150000,repeats:[3,5]});
+  define('pushups','exercise',ordinary,1.1,[8000,12000],{space:'wide',cooldown:150000,repeats:[3,5],prepare:[1800,2200],finish:[1500,1900]});
   define('sword','play',ordinary,.65,[7000,12000],{space:'wide',props:['sword'],cooldown:180000,repeats:[2,3]});
   define('sketch','work',[...ordinary,'process'],5,[6500,12000],{space:'desk',props:['notebook','pencil'],cooldown:38000});
   define('note','work',[...ordinary,'process','detail'],5,[4500,7500],{space:'small',props:['notebook','pencil'],cooldown:28000});

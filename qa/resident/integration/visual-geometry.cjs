@@ -15,15 +15,15 @@ const intersects = (a,b) => a && b && a.left < b.right && a.right > b.left && a.
     const snapshot = () => page.evaluate(() => {
       const c=portfolioCompanion.getState(),p=c.position,b=c.rig?.bounds;
       const rect=selector => {const n=document.querySelector(selector); if (!n || !n.getClientRects().length || n.hidden || getComputedStyle(n).visibility==='hidden') return null; return n.getBoundingClientRect().toJSON();};
-      return {c,body:p&&b?{left:p.x+(b.left-60)*p.scale,right:p.x+(b.right-60)*p.scale,top:p.y+(b.top-100)*p.scale,bottom:p.y+(b.bottom-100)*p.scale}:null,front:portfolioWorkGeometry()?.front,pause:rect('#companion-pause'),protected:['#home-control','#language-toggle','.portfolio-nav','#material-dots','#previous-material','#next-material','#visit-control'].map(selector=>({selector,rect:rect(selector)})).filter(a=>a.rect)};
+      return {c,body:p&&b?{left:p.x+(b.left-60)*p.scale,right:p.x+(b.right-60)*p.scale,top:p.y+(b.top-100)*p.scale,bottom:p.y+(b.bottom-100)*p.scale}:null,front:portfolioWorkGeometry()?.front,pausePresent:!!document.getElementById('companion-pause'),protected:['#home-control','#language-toggle','.portfolio-nav','#material-dots','#previous-material','#next-material','#visit-control'].map(selector=>({selector,rect:rect(selector)})).filter(a=>a.rect)};
     });
     try {
       await page.goto('http://127.0.0.1:8943/');
-      await page.waitForFunction(()=>portfolioLoader.getState().phase==='complete'&&portfolioCharacter.getState().retired,null,{timeout:45000});
+      await page.waitForFunction(()=>portfolioLoader.getState().phase==='complete'&&document.body.dataset.resident==='ready'&&window.portfolioCompanion,null,{timeout:45000});
       for (const fontSize of ['100%','125%','150%','200%']) {
         await page.evaluate(fontSize=>document.documentElement.style.fontSize=fontSize,fontSize);
         const s=await snapshot();
-        add(`${tag} ${fontSize} pause has clear header placement`,s.protected.filter(x=>x.selector!=='#material-dots').every(x=>!intersects(s.pause,x.rect)),s);
+        add(`${tag} ${fontSize} has no public pause button`,!s.pausePresent,s);
       }
       await page.evaluate(()=>document.documentElement.style.fontSize='');
       await page.locator('#work-toggle').click(); await settle('work');
@@ -45,7 +45,7 @@ const intersects = (a,b) => a && b && a.left < b.right && a.right > b.left && a.
             },index,{timeout:14000});
             const s=await snapshot();
             add(`${tag} ${staticMode} ${key}:${index} resident avoids front and controls`,!s.c.active || (!intersects(s.body,s.front)&&s.protected.every(x=>!intersects(s.body,x.rect))),s);
-            add(`${tag} ${staticMode} ${key}:${index} pause avoids controls`,s.protected.every(x=>!intersects(s.pause,x.rect)),{pause:s.pause,protected:s.protected});
+            add(`${tag} ${staticMode} ${key}:${index} has no public pause button`,!s.pausePresent,{pausePresent:s.pausePresent});
             if(key==='andra'&&index===3&&staticMode==='paused') await page.screenshot({path:path.join(out,tag+'-detail.png')});
           }
           await page.locator('#studio-back').click(); await settle('work');

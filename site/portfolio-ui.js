@@ -13,8 +13,7 @@
     ui.id = 'portfolio-ui';
     ui.innerHTML = `<button id="home-control" class="home-anchor" type="button" aria-label="${t('ui.homeLabel')}"><span class="home-signature">Dumitru</span></button>
     <nav class="portfolio-nav" aria-label="${t('ui.navigation')}">
-      <div class="index-wrap"><button id="work-toggle" class="nav-pill" aria-expanded="false" aria-controls="work-list">${icon('work')}<span data-copy="ui.work">${t('ui.work')}</span></button>
-      <div id="work-list" hidden>${data.projects.filter(p => p.portfolioCase).map((p,i)=>`<button data-key="${p.key}"><span>${String(i+1).padStart(2,'0')}</span>${p.name}${icon('arrow')}</button>`).join('')}<p>${t('ui.concepts')}</p></div></div>
+      <button id="work-toggle" type="button" class="nav-pill">${icon('work')}<span data-copy="ui.work">${t('ui.work')}</span></button>
       <button id="process-control" type="button" class="nav-pill" data-key="process" aria-expanded="false" aria-controls="studio-process">${icon('process')}<span data-copy="ui.process">${t('ui.process')}</span></button>
       <button id="about-control" type="button" class="nav-pill" data-key="despre" aria-expanded="false" aria-controls="studio-about">${icon('about')}<span data-copy="ui.about">${t('ui.about')}</span></button>
       <a id="nav-contact" class="nav-pill" href="mailto:andrusciac.dumitru@gmail.com">${icon('contact')}<span data-copy="ui.contact">${t('ui.contact')}</span></a>
@@ -56,7 +55,6 @@
       ui.querySelector('.portfolio-nav').setAttribute('aria-label',t('ui.navigation'));
       ui.querySelectorAll('[data-copy]').forEach(node=>node.textContent=t(node.dataset.copy));
       ui.querySelector('#home-control').setAttribute('aria-label',t('ui.homeLabel'));
-      ui.querySelector('#work-list p').textContent=t('ui.concepts');
       ui.querySelector('#return-control').setAttribute('aria-label',t('ui.return'));
       ui.querySelector('#return-control span').textContent=t('ui.back');
       ui.querySelector('.material-controls').setAttribute('aria-label',t('ui.materials'));
@@ -77,7 +75,7 @@
     };
     hideLegacyControls();
     ui.querySelector('#home-control').onclick=()=>window.portfolioEntry?window.portfolioEntry.showHome():navigate({key:'home'});
-    const workToggle = ui.querySelector('#work-toggle'), workList = ui.querySelector('#work-list');
+    const workToggle = ui.querySelector('#work-toggle');
     let returnFocus = workToggle, wasFocused = false, lastProject = null, requestedKey = null, keyboardOpen = false, pendingReturnFocus = null;
     const rememberOpener=(button,key,event)=>{if(!window.portfolioRuntime?.focusedKey)returnFocus=button;requestedKey=key;keyboardOpen=event.detail===0;pendingReturnFocus=null};
     const restoreFocus=()=>{
@@ -106,14 +104,18 @@
     // The native focused key clears as return begins. Guard against a second
     // close, while allowing a newly opened project to close during that flight.
     const requestReturn=()=>{if(!data.projects.some(p=>p.key===window.portfolioRuntime?.focusedKey))return;navigate({action:'return'})};
-    const closeIndex = () => {workList.hidden = true;workToggle.setAttribute('aria-expanded','false')};
-    workToggle.onclick = () => {if(window.portfolioEntry&&(portfolioEntry.mode!=='work'||window.portfolioRuntime?.focusedKey)){closeIndex();portfolioEntry.enterWork();return}workList.hidden=!workList.hidden;workToggle.setAttribute('aria-expanded',String(!workList.hidden))};
-    ui.querySelectorAll('[data-key]').forEach(button=>button.onclick=event=>{closeIndex();const key=button.dataset.key;if(key==='process'||key==='despre'||window.portfolioRuntime?.focusedKey!==key){rememberOpener(button.classList.contains('nav-pill')?button:workToggle,key,event);if(window.portfolioEntry)portfolioEntry.open(key);else navigate({key})}});
+    workToggle.onclick = () => {
+      const entry=window.portfolioEntry,intent=document.body.dataset.entryTarget;
+      if(!entry){navigate({action:'overview'});return;}
+      if(entry.pending&&intent==='home')return;
+      if(intent==='work'||!intent&&entry.mode==='work'&&!window.portfolioRuntime?.focusedKey){entry.showHome();return;}
+      if(!entry.pending)entry.enterWork();
+    };
+    ui.querySelectorAll('[data-key]').forEach(button=>button.onclick=event=>{const key=button.dataset.key;if(key==='process'||key==='despre'||window.portfolioRuntime?.focusedKey!==key){rememberOpener(button.classList.contains('nav-pill')?button:workToggle,key,event);if(window.portfolioEntry)portfolioEntry.open(key);else navigate({key})}});
     ui.querySelector('#return-control').onclick=requestReturn;
     const changeMaterial=step=>{const key=window.portfolioRuntime?.focusedKey;if(window.portfolioSurfaces?.count(key))surface({key,step});else navigate({action:'material',step})};
     ui.querySelector('#previous-material').onclick=()=>changeMaterial(-1);
     ui.querySelector('#next-material').onclick=()=>changeMaterial(1);
-    document.addEventListener('pointerdown',e=>{if(!e.target.closest('.index-wrap'))closeIndex()});
     document.addEventListener('keydown',e=>{
       if(languageOpen())return;
       const keyboardProject=window.portfolioRuntime?.focusedKey;
@@ -123,12 +125,11 @@
       if(e.key!=='Escape')return;
       const state=window.portfolioRuntime;
       const focusedControl=ui.contains(e.target)&&state?.focusedKey;
-      if(!state?.helpOpen&&workList.hidden&&!focusedControl)return;
+      if(!state?.helpOpen&&!focusedControl)return;
       e.preventDefault();
       e.stopImmediatePropagation();
       if(e.repeat)return;
       if(state?.helpOpen){navigate({action:'help'});return;}
-      if(!workList.hidden){closeIndex();workToggle.focus();return;}
       // Native Escape only blurs focused controls. Our project controls close
       // the project directly, matching Escape from the canvas.
       requestReturn();
@@ -167,7 +168,9 @@
       workToggle.setAttribute('aria-current',intended==='work'||!intended&&(window.portfolioEntry?.mode==='work'||project?.portfolioCase)?'page':'false');
       ui.querySelector('#about-control').setAttribute('aria-current',aboutActive?'page':'false');
       ui.querySelector('#about-control').setAttribute('aria-expanded',String(!!aboutActive));
-      if(customSurface)return;
+      // The phone/process owns focus now. A pending return from an earlier
+      // project must not steal focus after that section's Back completes.
+      if(customSurface){wasFocused=false;pendingReturnFocus=null;return;}
       if(!project){if(wasFocused)pendingReturnFocus=returnFocus;wasFocused=false;restoreFocus();return;}
       if(focusedProject&&requestedKey===project.key){if(keyboardOpen)(ui.querySelector('#studio-back')||workToggle).focus({preventScroll:true});requestedKey=null;keyboardOpen=false;}
       else if(!wasFocused)returnFocus=workToggle;

@@ -119,7 +119,7 @@
  }
  async function enterWork(){
   if(!booted||pending)return;
-  const fromStudio=['home','process','about'].includes(mode),fromAbout=mode==='about',resumeWork=mode==='process'&&processReturnMode==='work';
+  const fromStudio=['home','process','about'].includes(mode),fromAbout=mode==='about',fromDetail=mode==='detail',resumeWork=mode==='process'&&processReturnMode==='work';
   const token=++generation;origin='work';pending=true;
   announceTarget('work');
   root.querySelector('#enter-work').setAttribute('aria-busy','true');
@@ -128,7 +128,7 @@
   if(fromAbout){await retreatPhone(token);if(token!==generation)return;}
   root.querySelector('#enter-work').removeAttribute('aria-busy');
   const exit=fromStudio?exitStudio():Promise.resolve();
-  overviewVisited=true;if(!resumeWork)nav({action:'overview'});
+  overviewVisited=true;if(fromDetail)nav({action:'return'});else if(!resumeWork)nav({action:'overview'});
   await Promise.all([exit,new Promise(r=>setTimeout(r,reduced()?0:fromStudio?900:620))]);
   if(token!==generation)return;pending=false;setMode('work');
  }
@@ -218,6 +218,33 @@
  root.addEventListener('pointerdown',event=>{laptopPointerStart=laptopButton.contains(event.target)},{capture:true,passive:true});
  laptopButton.onclick=event=>{if(event.detail>0&&!laptopPointerStart){event.preventDefault();return;}enterWork()};
  root.querySelectorAll('[data-desk-open]').forEach(button=>button.onclick=()=>open(button.dataset.deskOpen));
+ // About is a scene within the desk, not a modal. Only a complete blank-space
+ // tap dismisses it: phone gestures, controls and drags keep their own behavior.
+ let aboutBlankPress=null,aboutDismissedClick=null;
+ const blankOutsidePhone=(target,x,y)=>{
+  if(!(target instanceof Element)||target.closest('#portfolio-ui,.desk-phone,button,a,input,textarea,select,[role="button"],[role="menu"],#work-companion'))return false;
+  const phone=root.querySelector('.desk-phone'),r=phone?.getBoundingClientRect();
+  return !!r&&(x<r.left||x>r.right||y<r.top||y>r.bottom);
+ };
+ document.addEventListener('pointerdown',event=>{
+  aboutBlankPress=null;
+  if(mode!=='about'||pending||!event.isPrimary||event.button!==0||!blankOutsidePhone(event.target,event.clientX,event.clientY))return;
+  aboutBlankPress={id:event.pointerId,x:event.clientX,y:event.clientY,generation};
+ },{capture:true,passive:true});
+ document.addEventListener('pointermove',event=>{if(aboutBlankPress?.id===event.pointerId&&Math.hypot(event.clientX-aboutBlankPress.x,event.clientY-aboutBlankPress.y)>8)aboutBlankPress=null;},{capture:true,passive:true});
+ document.addEventListener('pointercancel',()=>{aboutBlankPress=null;},{capture:true,passive:true});
+ document.addEventListener('pointerup',event=>{
+  const press=aboutBlankPress;aboutBlankPress=null;
+  if(!press||event.pointerId!==press.id||press.generation!==generation||mode!=='about'||pending||Math.hypot(event.clientX-press.x,event.clientY-press.y)>8||!blankOutsidePhone(event.target,event.clientX,event.clientY))return;
+  event.preventDefault();event.stopImmediatePropagation();
+  aboutDismissedClick={x:event.clientX,y:event.clientY,time:performance.now()};
+  back();
+ },{capture:true});
+ document.addEventListener('click',event=>{
+  if(!aboutDismissedClick||event.detail===0||performance.now()-aboutDismissedClick.time>700||Math.hypot(event.clientX-aboutDismissedClick.x,event.clientY-aboutDismissedClick.y)>20)return;
+  aboutDismissedClick=null;event.preventDefault();event.stopImmediatePropagation();
+ },{capture:true});
+ addEventListener('blur',()=>{aboutBlankPress=null;});
  // Three objects unfold at a time, once the loader has actually left the screen.
  let deskRevealed=false,deskRevealFrame=0,deskRevealObserver=null;
  const revealDesk=()=>{
@@ -239,7 +266,7 @@
  // Home wheel/touch belongs to the cyclic composition controller. Work is explicit.
  document.addEventListener('wheel',e=>{if(pending){e.preventDefault();e.stopImmediatePropagation()}},{passive:false,capture:true});
  document.addEventListener('keydown',e=>{if(['process','about'].includes(mode)&&e.key==='Escape'){if(mode==='about'&&window.portfolioAbout?.getState()?.photo>=0)return;e.preventDefault();e.stopImmediatePropagation();back()}},true);
- document.addEventListener('keydown',e=>{if((e.key==='Home'||(e.key==='Escape'&&mode==='work'&&!window.portfolioRuntime?.focusedKey&&!window.portfolioRuntime?.helpOpen&&document.getElementById('work-list')?.hidden))&&!e.ctrlKey&&!e.metaKey){e.preventDefault();e.stopImmediatePropagation();showHome()}},true);
+ document.addEventListener('keydown',e=>{if((e.key==='Home'||(e.key==='Escape'&&mode==='work'&&!window.portfolioRuntime?.focusedKey&&!window.portfolioRuntime?.helpOpen))&&!e.ctrlKey&&!e.metaKey){e.preventDefault();e.stopImmediatePropagation();showHome()}},true);
  setInterval(()=>{
   if(!booted||pending||mode==='process'||mode==='about')return;
   const s=window.portfolioRuntime;if(!s?.ready)return;

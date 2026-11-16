@@ -13,6 +13,7 @@
  const footprints=Object.fromEntries(actions.map(a=>[a,{left:20,top:12,right:103,bottom:195}]));
  ['work','game','sketch'].forEach(a=>footprints[a]={left:20,top:28,right:150,bottom:195});
  footprints.coffee={left:22,top:12,right:121,bottom:195};
+ footprints.measure={left:20,top:12,right:117,bottom:195};
  footprints.sword={left:-15,top:-10,right:193,bottom:195};
  footprints.pushups={left:-40,top:12,right:150,bottom:195};
  footprints.juggle={left:8,top:-24,right:128,bottom:195};
@@ -46,9 +47,11 @@
   ['angle','headTilt','headShift'].forEach(k=>out[k]=mix(a[k],b[k],t));return out;
  }
  function raisedMug(t,variant){
-  const p=neutral();p.hip.x=56;p.angle=-.025;p.headTilt=.1;
-  p.rightHand=lerp(point(95,103),point(88,61),ease(t));p.rightHand.x+=Math.sin(clamp(t)*Math.PI)*6;
-  p.leftHand=variant%3===2?lerp(point(34,115),point(67,64),ease(t)):point(32,116);
+  const p=neutral(),u=ease(t);p.hip.x=56;p.angle=-.025;p.headTilt=mix(.1,.28,u);
+  // The handle stays at the wrist. A compact cup reaches the lower-right rim
+  // of the head rather than covering its outline or intersecting the neck.
+  p.rightHand=lerp(point(95,103),point(90,55),u);p.rightHand.x+=Math.sin(u*Math.PI)*3;
+  p.leftHand=point(32,116);p.propAngle=12*u;p.armBends=[1,1];
   p.prop='mug';p.fixture='coffee';return p;
  }
  function seated(kind,time,variant){
@@ -80,9 +83,34 @@
   p.leftHand=point(38,107+amount*22);p.rightHand=point(91,105+amount*22);return p;
  }
  function plank(amount){
-  const p=neutral();p.hip=point(82,146+amount*20);p.angle=-1.45;p.headTilt=-1.1;
-  p.leftHand=point(16,FLOOR);p.rightHand=point(27,FLOOR);p.leftFoot=point(133,FLOOR);p.rightFoot=point(142,FLOOR);
-  p.armBends=[-1,-1];p.legBends=[-1,-1];p.contacts=['leftHand','rightHand','leftFoot','rightFoot'];return p;
+  const p=neutral();p.angle=mix(1.15,1.35,amount);
+  // Prone plank: toes behind the hip, palms below the shoulders, chest facing
+  // the floor. The torso and extended back leg share one body axis.
+  p.hip=point(-12+Math.sin(p.angle)*73.999,FLOOR-Math.cos(p.angle)*73.999);
+  p.headTilt=p.angle+.34;
+  p.leftHand=point(106,FLOOR);p.rightHand=point(116,FLOOR);
+  p.leftFoot=point(-8,FLOOR);p.rightFoot=point(-12,FLOOR);
+  p.armBends=[1,1];p.contacts=['leftHand','rightHand','leftFoot','rightFoot'];return p;
+ }
+ function pushupEntry(progress){
+  const base=neutral(),crouch=crouched(1),plant=neutral(),end=plank(0),t=clamp(progress);
+  plant.angle=.82;plant.hip.x=62;
+  // The right arm is straight exactly at the bend-side change. This avoids an
+  // elbow flipping through the body while both palms stay planted.
+  const shoulderX=plant.hip.x+Math.sin(plant.angle)*50;
+  plant.hip.y=FLOOR-Math.sqrt(54.999**2-(116-shoulderX)**2)+Math.cos(plant.angle)*50;
+  plant.headTilt=.7;plant.leftFoot=point(35,FLOOR);plant.rightFoot=point(84,FLOOR);
+  plant.leftHand=point(106,FLOOR);plant.rightHand=point(116,FLOOR);
+  plant.contacts=['leftHand','rightHand','leftFoot','rightFoot'];
+  if(t<.3)return blend(base,crouch,ease(t/.3));
+  if(t<.65)return blend(crouch,plant,ease((t-.3)/.35));
+  const step=ease((t-.65)/.35),p=blend(plant,end,step,end);
+  // Move the feet back one after another; hands are already supporting weight.
+  p.leftFoot=lerp(plant.leftFoot,end.leftFoot,ease(clamp((t-.65)/.2)));
+  p.rightFoot=lerp(plant.rightFoot,end.rightFoot,ease(clamp((t-.8)/.2)));
+  p.contacts=['leftHand','rightHand'];
+  if(t>=.85)p.contacts.push('leftFoot');if(t===1)p.contacts.push('rightFoot');
+  return p;
  }
  function writing(action,time,variant){
   const p=action==='sketch'?seated('work',0,0):neutral(),q=time/1000,writing=(q%3.4)<2.2;
@@ -108,11 +136,10 @@
    pose.contacts=pose.leftFoot.y===FLOOR?['leftFoot']:['rightFoot'];
   } else if(action==='work'||action==='game')pose=seated(action,phase==='perform'?time:0,v);
   else if(action==='coffee'){
-   const t=phase==='perform'?clamp(p/.26):phase==='finish'?1-ease(clamp(p/.76)):0;pose=raisedMug(t,v);
+   const t=phase==='perform'?(p<.24?p/.24:p<.44?1:p<.67?mix(1,.2,ease((p-.44)/.23)):.2):phase==='finish'?.2*(1-ease(clamp(p/.68))):0;pose=raisedMug(t,v);
    pose.prop=(phase==='prepare'||phase==='finish'&&p>=.76)?null:'mug';pose.cupOnTable=!pose.prop;
-   if(phase==='perform'&&p>.32&&p<.82)pose.headTilt=.1+Math.sin((p-.32)/.5*Math.PI)*.16;
-   if(phase==='prepare')pose=blend(base,pose,active);
-   if(phase==='finish'&&p>.76)pose=blend(pose,base,ease((p-.76)/.24),pose);
+   if(phase==='prepare'){pose=blend(base,pose,active);pose.armFold={from:base,to:raisedMug(0,v),t:active};}
+   if(phase==='finish'&&p>.76){const t=ease((p-.76)/.24);pose=blend(pose,base,t,pose);pose.armFold={from:raisedMug(0,v),to:base,t};}
   } else if(action==='sword'){
    pose=swordPose(phase==='perform'?p:0);
    if(phase==='finish'){pose.rightHand=lerp(point(96,84),point(72,60),Math.sin(p*Math.PI));pose.propAngle=mix(-24,-90,Math.sin(p*Math.PI));}
@@ -137,8 +164,8 @@
    const repetitions=clamp(Number(input.repeats)||4,3,5),rep=(p*repetitions)%1;
    const down=rep<.62?ease(rep/.62):1-ease((rep-.62)/.38);
    pose=plank(phase==='perform'?down:0);
-   if(phase==='prepare')pose=p<.38?blend(base,crouched(1),ease(p/.38)):blend(crouched(1),pose,ease((p-.38)/.62));
-   if(phase==='finish')pose=p<.56?blend(pose,crouched(1),ease(p/.56)):blend(crouched(1),base,ease((p-.56)/.44));
+   if(phase==='prepare')pose=pushupEntry(p);
+   if(phase==='finish')pose=pushupEntry(1-p);
   } else if(action==='squat'){
    const n=clamp(Number(input.repeats)||3,2,5),rep=(p*n)%1,amount=rep<.58?ease(rep/.58):1-ease((rep-.58)/.42);
    pose=crouched(phase==='perform'?amount:0);pose.leftHand=point(78,96+amount*21);pose.rightHand=point(98,96+amount*21);
@@ -185,7 +212,12 @@
    if(flying){pose.particles=[0,1,2].map(i=>{const t=(phaseOffset+i*Math.PI*2/3)%(Math.PI*2);return{kind:'ball',x:60+Math.cos(t)*31,y:95-Math.max(0,Math.sin(t))*76,angle:0};});pose.leftHand.y+=Math.cos(phaseOffset)*3;pose.rightHand.y-=Math.cos(phaseOffset)*3;}
    else{pose.prop='balls';pose.secondary='balls';}
   } else if(action==='measure'){
-   pose.angle=.12;pose.headTilt=.2;pose.leftHand=point(47,109);pose.rightHand=point(97,89);pose.prop='ruler';pose.propAngle=phase==='perform'&&v%2?90:0;
+   const sweep=phase==='perform'?Math.sin(p*Math.PI*2):0;
+   pose.angle=.075;pose.headTilt=.3;pose.rightHand=point(102+sweep*2,100-Math.sin(p*Math.PI)**2*5);
+   pose.prop='ruler';pose.propAngle=-5+sweep*4;pose.armBends=[1,1];
+   const angle=pose.propAngle*Math.PI/180;
+   pose.leftHand=point(pose.rightHand.x-Math.cos(angle)*41,pose.rightHand.y-Math.sin(angle)*41);
+   if(phase==='prepare'&&p<.72||phase==='finish'&&p>.68)pose.prop=null;
   } else if(action==='fetch'||action==='carryFlower'){
    pose.angle=.09;pose.headTilt=.13;pose.rightHand=point(86,98);pose.leftHand=point(38,115);pose.prop='flower';
    if(action==='fetch'){if(phase==='prepare')pose.prop=null;else if(phase==='perform'&&p<.4){pose.angle=.32;pose.hip.y=125;pose.rightHand=point(106,121);}}
@@ -200,12 +232,12 @@
     pose.leftHand=walk.leftHand;pose.rightHand=pose.prop?point(90,105):walk.rightHand;
    }
   }
-  pose.action=action;pose.phase=phase;
+  pose.action=action;pose.phase=phase;pose.progress=p;
   if(!['idle','lift','land','coffee','peek','pushups','carryFlower'].includes(action))pose=phase==='finish'?blend(pose,base,1-active,pose):blend(base,pose,active);
   if(action==='carryFlower'&&phase==='prepare')pose=blend(base,pose,active);
   if(action==='inspect'&&input.held==='wrench'){pose.rightHand=point(91,88);pose.propAngle=-18;}
   const lookX=clamp(Number(input.look?.x)||0,-1,1),lookY=clamp(Number(input.look?.y)||0,-1,1);
-  pose.headTilt+=lookX*.12+lookY*.08;
+  if(['idle','look','inspect','sit'].includes(action))pose.headTilt+=lookX*.12+lookY*.08;
   if(input.held){pose.prop=input.held;pose.rightHand=action==='lift'?point(84,91):pose.rightHand;}
   if(phase==='finish'&&p>.94&&!input.held&&!['coffee','peek','fetch'].includes(action)){pose.prop=null;pose.secondary=null;pose.particles=[];}
   return pose;
@@ -214,6 +246,12 @@
   const hip=pose.hip,shoulder=point(hip.x+Math.sin(pose.angle)*LENGTHS.torso,hip.y-Math.cos(pose.angle)*LENGTHS.torso);
   const la=ik(shoulder,pose.leftHand,28,27,pose.armBends[0]),ra=ik(shoulder,pose.rightHand,28,27,pose.armBends[1]);
   const ll=ik(hip,pose.leftFoot,36,38,pose.legBends[0]),rl=ik(hip,pose.rightFoot,36,38,pose.legBends[1]);
+  if(pose.armFold){
+   const {from,to,t,fromJoints}=pose.armFold,a=fromJoints||solve(from),b=solve(to),angle=(r,s)=>Math.atan2(s.y-r.y,s.x-r.x),turn=(u,v)=>u+Math.atan2(Math.sin(v-u),Math.cos(v-u))*t;
+   const upper=turn(angle(a.shoulder,a.rightElbow),angle(b.shoulder,b.rightElbow)),lower=turn(angle(a.rightElbow,a.rightHand),angle(b.rightElbow,b.rightHand));
+   ra.middle=point(shoulder.x+Math.cos(upper)*28,shoulder.y+Math.sin(upper)*28);
+   ra.end=point(ra.middle.x+Math.cos(lower)*27,ra.middle.y+Math.sin(lower)*27);
+  }
   const neck=point(shoulder.x+Math.sin(pose.headTilt)*10,shoulder.y-Math.cos(pose.headTilt)*10);
   const head=point(neck.x+pose.headShift+Math.sin(pose.headTilt)*15,neck.y-Math.cos(pose.headTilt)*15);
   return {hip,shoulder,neck,head,leftElbow:la.middle,leftHand:la.end,rightElbow:ra.middle,rightHand:ra.end,
@@ -230,14 +268,14 @@
   return `M${pstr(a)} C${pstr(first)} ${pstr(before)} ${pstr(b)} C${pstr(after)} ${pstr(last)} ${pstr(c)}`;
  }
  const propPaths={
-  mug:'M-20-9 Q-12-11-4-9 L-4 8 Q-12 12-20 8 Z M-4-5 C7-7 7 7-4 5 M-17-16q-3-5 0-8',
+  mug:'M-18-6 Q-12-7-6-6 L-6 7 Q-12 9-18 7 Z M-6-3 C3-5 4 5-6 4',
   sword:'M-7 0H5 M3-7v14 M5-2 61-2 67 0 61 2H5',
   pencil:'M-8 9 12-15 M10-16l3 2 M-8 9l-2 4 4-2',
   notebook:'M-24-26 3-29 6 8-22 11Z M-20-20l17-2m-17 8 19-2m-18 8 13-1',
   gamepad:'M-22-4q2-11 10-8l12 1q8-2 10 7l4 13q0 6-6 3L1 6h-12l-7 6q-7 2-7-4Z M-16-3h8m-4-4v8 M1-4h1m4 4h1',
   paper:'M-17-21 11-18 8 16-20 12Z M-12-13l17 2m-17 7 15 1m-16 6 11 1',
   flower:'M0 12Q-3-2 0-27 M-1 2q-12-10-12-3 7 7 12 6 M0-24q-10-2-7-9-7-8 2-10 1-10 8-3 9-5 10 3 9 7 0 10 0 9-8 5Z',
-  ruler:'M-4-23 5-23 5 25-4 25Z M-4-17h5m-5 8h3m-3 8h5m-5 8h3m-3 8h5',
+  ruler:'M-42-3H1V4H-42Z M-36-3v4m6-4v2m6-2v4m6-4v2m6-2v4m6-4v2',
   wrench:'M-2 21 1-9q-10-6-4-16l3 9 7-2 1-9q9 8 2 16L7 22Z',
   menu:'M-20-24 8-22 8 17-20 15Z M-15-17h17m-17 7h10m-10 7h17m-17 7h12',
   schematic:'M-25-22 13-22 13 16-25 16Z M-20-16h14v12h-14Z M0-16h8v26h-8Z M-20 3h14v7h-14Z',
@@ -285,8 +323,8 @@
    } else if(p.fixture==='flower'){
     if(p.flowerOnGround){d=propPaths.flower;fixtures.firstChild.setAttribute('transform','translate(105 176)');fixtureState=[{kind:'flower',anchor:point(105,188)}];}
    } else if(p.fixture==='coffee'){
-    d='M78 113Q97 112 116 113 M82 114 79 188 M111 114 115 188';fixtureState=[{kind:'table',anchor:point(95,113)}];
-    if(p.cupOnTable){d+=' M75 94Q83 92 91 94L91 111Q83 115 75 111Z M91 98q11-2 4 10h-4';fixtureState.push({kind:'mug',anchor:point(95,103)});}
+    d='M73 112Q91 109 110 112Q92 115 73 112 M78 114 75 188 M105 114 108 188';fixtureState=[{kind:'table',anchor:point(95,113)}];
+    if(p.cupOnTable){d+=' M77 97Q83 96 89 97L89 110Q83 112 77 110Z M89 100C98 98 99 108 89 107';fixtureState.push({kind:'mug',anchor:point(95,103)});}
    }
    fixtures.firstChild.setAttribute('d',d);
   }
@@ -295,7 +333,21 @@
    if(key!==phaseKey){phaseFrom=lastPose?clone(lastPose):null;phaseJoints=lastJoints?clone(lastJoints):null;phaseKey=key;}
    let p=poseFor(input);
    // Interrupted activities leave their actual current pose rather than teleporting to a canned exit.
-   if(input.interrupted&&input.phase==='finish'&&phaseFrom){
+   if(input.interrupted&&input.phase==='finish'&&phaseFrom&&input.action==='pushups'){
+    const progress=clamp(input.progress);
+    if(phaseFrom.phase==='prepare')p=pushupEntry((phaseFrom.progress||0)*(1-ease(progress)));
+    else if(phaseFrom.phase==='finish')p=pushupEntry((1-(phaseFrom.progress||0))*(1-ease(progress)));
+    else if(progress<.2)p=blend(phaseFrom,plank(0),ease(progress/.2));
+    else p=pushupEntry(1-ease((progress-.2)/.8));
+    p.action='pushups';p.phase='finish';p.progress=progress;
+   } else if(input.interrupted&&input.phase==='finish'&&phaseFrom&&input.action==='coffee'){
+    const progress=clamp(input.progress),table=raisedMug(0,input.variant|0),base=neutral();
+    if(phaseFrom.prop==='mug'){
+     if(progress<.76){p=blend(phaseFrom,table,ease(progress/.76),table);p.propAngle=mix(phaseFrom.propAngle||0,0,ease(progress/.76));p.cupOnTable=false;}
+     else {const t=ease((progress-.76)/.24);p=blend(table,base,t,table);p.prop=null;p.cupOnTable=true;p.armFold={from:table,to:base,t};}
+    }else{const t=ease(progress);p=blend(phaseFrom,base,t,table);p.prop=null;p.cupOnTable=true;p.armFold={from:{...phaseFrom,armFold:null},fromJoints:phaseJoints,to:base,t};}
+    p.action='coffee';p.phase='finish';p.progress=progress;
+   } else if(input.interrupted&&input.phase==='finish'&&phaseFrom){
     const t=ease(clamp(input.progress));p=blend(phaseFrom,p,t);
     if(t<.72&&phaseFrom.prop&&!p.prop){p.prop=phaseFrom.prop;p.propHand=phaseFrom.propHand;p.propAngle=phaseFrom.propAngle;}
    }

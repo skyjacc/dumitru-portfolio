@@ -22,7 +22,7 @@ const near = (a, b, keys = ['x', 'y', 'scale']) => !!a && !!b && keys.every(key 
   page.on('pageerror', error => errors.push(error.message));
   try {
     await page.goto(origin + '/');
-    await page.waitForFunction(() => portfolioLoader.getState().phase === 'complete' && portfolioCharacter.getState().retired, null, {timeout: 45000});
+    await page.waitForFunction(() => portfolioLoader.getState().phase === 'complete' && document.body.dataset.resident === 'ready' && window.portfolioCompanion, null, {timeout: 45000});
     await page.locator('#work-toggle').click(); await settle('work');
     await page.waitForTimeout(1900);
     for (const action of ['work', 'coffee', 'sword', 'pushups']) {

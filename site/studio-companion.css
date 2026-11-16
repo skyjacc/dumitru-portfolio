@@ -24,7 +24,9 @@
 #companion-fixtures { z-index: 35; opacity: 0; visibility: hidden; }
 #companion-fixtures[data-visible=true] { opacity: 1; visibility: visible; }
 #work-companion[data-visible=true] { opacity: 1; visibility: visible; }
-body[data-resident=ready] #loader-walker { display: none; }
+/* No fading second figure on Home: the original walker owns this section. */
+body[data-entry=home] #work-companion,
+body[data-entry=home] #companion-fixtures { display: none; }
 #work-companion[hidden], #companion-fixtures[hidden] { display: none; }
 #work-companion .resident-svg,
 #companion-fixtures .resident-svg {
@@ -66,43 +68,12 @@ body[data-resident=ready] #loader-walker { display: none; }
   white-space: nowrap;
   pointer-events: none;
 }
-#companion-pause {
-  position: fixed;
-  left: max(12px, env(safe-area-inset-left));
-  bottom: max(12px, env(safe-area-inset-bottom));
-  z-index: 65;
-  display: grid;
-  place-items: center;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 10px;
-  margin: 0;
-  border: 1px solid #45453f;
-  border-radius: 50%;
-  background: #171715;
-  color: #dfddd5;
-  cursor: pointer;
-  font: 500 .75rem/1.2 StudioSans, sans-serif;
-  touch-action: manipulation;
-}
-#companion-pause[hidden] { display: none; }
-#companion-pause svg { display: block; width: 18px; height: 18px; pointer-events: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-#companion-pause:focus-visible { outline: 2px solid #dfddd5; outline-offset: 4px; }
-#companion-pause:hover { background: #252521; border-color: #85847d; }
-/* The first header row has a free centre; keep the mobile material tray clear. */
-@media (max-width: 600px) {
-  #companion-pause {
-    left: calc(50% - 22px);
-    top: max(16px, env(safe-area-inset-top));
-    bottom: auto;
-    width: 44px;
-    height: 44px;
-  }
-}
 @media (prefers-reduced-motion: no-preference) {
   #work-companion { transition: opacity .18s ease, visibility .18s; }
 }
+/* Content clearance is immediate: a fading figure must not cross phone text. */
+#work-companion[data-blocked=true],
+#companion-fixtures[data-blocked=true] { visibility: hidden; opacity: 0; transition: none; }
 @media (forced-colors: active) {
-  #companion-pause { border-color: ButtonText; }
-  #companion-pause:focus-visible, #work-companion:focus-visible { outline-color: Highlight; }
+  #work-companion:focus-visible { outline-color: Highlight; }
 }
