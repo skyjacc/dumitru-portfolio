@@ -1,0 +1,13 @@
+const {chromium}=require('C:/Users/oblako/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules/playwright');
+const fs=require('fs'),path=require('path');
+const out=path.resolve(__dirname,'../qa');
+(async()=>{const b=await chromium.launch({headless:true,channel:'chrome'});const context=await b.newContext({viewport:{width:1440,height:900},recordVideo:{dir:path.join(out,'recordings'),size:{width:1280,height:800}}});const p=await context.newPage();const errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto('http://127.0.0.1:8943');await p.waitForFunction(()=>window.portfolioRuntime?.ready);await p.waitForTimeout(2400);
+await p.mouse.move(840,480);await p.mouse.down();await p.mouse.move(720,410,{steps:16});await p.mouse.up();await p.waitForTimeout(800);
+await p.locator('#work-toggle').click();await p.waitForTimeout(500);await p.locator('#work-list [data-key=andra]').click();await p.waitForTimeout(1400);
+await p.locator('[data-material="1"]').click();await p.waitForTimeout(1700);
+await p.locator('[data-material="2"]').click();await p.waitForTimeout(1400);
+await p.locator('#return-control').click();await p.waitForTimeout(1400);
+await p.locator('#about-control').click();await p.waitForTimeout(1300);
+await p.locator('[data-material="1"]').click();await p.waitForTimeout(1400);
+await p.locator('#return-control').click();await p.waitForTimeout(1300);
+const video=p.video();await context.close();await video.saveAs(path.join(out,'walkthrough.webm'));await b.close();console.log(JSON.stringify({errors,video:path.join(out,'walkthrough.webm')}));})();

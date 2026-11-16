@@ -1,0 +1,38 @@
+const {chromium}=require('C:/Users/oblako/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules/playwright');
+const fs=require('fs'),path=require('path'),out=path.join(__dirname,'after'),results=[];
+fs.mkdirSync(out,{recursive:true});
+function measure(){
+ const screen=document.querySelector('.about-phone-screen'),profile=screen.querySelector('.about-phone-profile'),phone=document.querySelector('.desk-phone');
+ const rect=n=>n.getBoundingClientRect().toJSON(),sr=rect(screen),pr=rect(phone),s=getComputedStyle(screen),layoutWidth=parseFloat(s.width),scale=sr.width/layoutWidth;
+ const fonts=[...profile.querySelectorAll('h2,h3,p,a')].map(n=>({class:n.className,tag:n.tagName,text:n.textContent,font:parseFloat(getComputedStyle(n).fontSize),renderedFont:parseFloat(getComputedStyle(n).fontSize)*scale,rect:rect(n)}));
+ return{viewport:[innerWidth,innerHeight],dpr:devicePixelRatio,locale:portfolioI18n.locale,orientation:phone.dataset.aboutOrientation,phone:pr,screen:sr,screenLayout:[layoutWidth,parseFloat(s.height)],screenScale:scale,profile:{scrollWidth:profile.scrollWidth,clientWidth:profile.clientWidth,scrollHeight:profile.scrollHeight,clientHeight:profile.clientHeight,scrollTop:profile.scrollTop},fonts,screenWithinPhone:sr.left>=pr.left-1&&sr.right<=pr.right+1&&sr.top>=pr.top-1&&sr.bottom<=pr.bottom+1,bounded:pr.left>=-1&&pr.top>=-1&&pr.right<=innerWidth+1&&pr.bottom<=innerHeight+1,noAI:!/(?:^|[^\p{L}])(?:AI|ИИ)(?:$|[^\p{L}])|artificial intelligence|inteligență artificială/iu.test(profile.innerText),state:portfolioComposition.getState()};
+}
+(async()=>{const browser=await chromium.launch({channel:'chrome',headless:true});
+for(const[w,h,dpr]of[[1440,900,1],[1440,900,2],[390,844,1],[390,844,3],[844,390,1],[375,600,1],[393,620,1]]){
+ const p=await browser.newPage({viewport:{width:w,height:h},deviceScaleFactor:dpr,isMobile:w<1000,hasTouch:w<1000}),errors=[],key=`${w}x${h}-dpr${dpr}`,checks=[],profiles=[];
+ p.on('pageerror',e=>errors.push(e.message));const check=(name,pass,detail)=>checks.push({name,pass,detail});
+ const settle=mode=>p.waitForFunction(mode=>portfolioEntry.mode===mode&&!portfolioEntry.pending&&!portfolioComposition.getState().active,mode,{timeout:15000});
+ try{
+ await p.goto('http://127.0.0.1:8943/');await p.waitForFunction(()=>portfolioLoader?.getState().phase==='complete'&&portfolioEntry?.ready&&document.querySelector('#studio-home').dataset.paperReveal==='done',null,{timeout:30000});
+ await p.mouse.move(w*.5,h*.5);await p.mouse.wheel(0,470);await p.waitForFunction(()=>Math.abs(portfolioComposition.getState().progress-portfolioComposition.getState().target)<1e-8);await p.waitForTimeout(50);const saved=await p.evaluate(()=>portfolioComposition.getState());
+ await p.locator('#about-control').click();await settle('about');
+ for(const locale of ['en','ro','ru']){
+ await p.evaluate(locale=>portfolioI18n.setLocale(locale),locale);await p.waitForFunction(()=>!document.querySelector('#studio-about .locale-rolling'));await p.waitForTimeout(50);await p.locator('.about-phone-profile').evaluate(n=>n.scrollTop=0);
+ const m=await p.evaluate(measure);profiles.push(m);check(`${locale} screen visible and bounded`,m.bounded&&m.screenWithinPhone,m.screen);check(`${locale} native DOM scale`,Math.abs(m.screenScale-1)<.01,m.screenScale);check(`${locale} no horizontal clipping`,m.profile.scrollWidth<=m.profile.clientWidth+1,m.profile);check(`${locale} no AI mentions`,m.noAI);check(`${locale} readable body and tagline`,m.fonts.find(f=>f.class==='about-profile-bio').renderedFont>=13.9&&m.fonts.find(f=>f.tag==='P'&&f.class==='').renderedFont>=10.9,m.fonts.map(f=>[f.class,f.renderedFont]));
+ await p.screenshot({path:path.join(out,key+'-'+locale+'-profile.png')});const r=await p.locator('.about-phone-screen').boundingBox();await p.screenshot({path:path.join(out,key+'-'+locale+'-screen.png'),clip:r});
+ const reach = await p.locator('.about-phone-profile').evaluate(n=>{n.scrollTop=n.scrollHeight;const r=n.querySelector('.about-instagram').getBoundingClientRect(),s=n.getBoundingClientRect();return{reached:n.scrollTop+n.clientHeight>=n.scrollHeight-1,linkVisible:r.top>=s.top-1&&r.bottom<=s.bottom+1,scroll:n.scrollTop,extent:n.scrollHeight-n.clientHeight}});check(locale+' profile end reachable',reach.reached&&reach.linkVisible,reach);await p.locator('.about-photo-grid button').first().click();await p.waitForFunction(()=>portfolioAbout.getState().view==='photo');await p.locator('.about-photo-next').click();check(`${locale} photo next`,await p.evaluate(()=>portfolioAbout.getState().photo===1));await p.locator('.about-photo-previous').click();check(`${locale} photo previous`,await p.evaluate(()=>portfolioAbout.getState().photo===0));
+ if(locale==='ru')await p.screenshot({path:path.join(out,key+'-photo.png')});await p.locator('.about-photo-back').click();check(`${locale} inner back retains About`,await p.evaluate(()=>portfolioAbout.getState().view==='profile'&&portfolioEntry.mode==='about'));await p.locator('.about-phone-profile').evaluate(n=>n.scrollTop=0);
+ }
+ const rotated=w<1000?{width:h,height:w}:{width:1024,height:768};await p.setViewportSize(rotated);await p.waitForTimeout(400);await settle('about');const rotatedMetrics=await p.evaluate(measure);check('rotated/resized About still readable and bounded',rotatedMetrics.bounded&&rotatedMetrics.screenWithinPhone&&Math.abs(rotatedMetrics.screenScale-1)<.01&&rotatedMetrics.fonts.find(f=>f.class==='about-profile-bio').renderedFont>=13.9,rotatedMetrics);await p.screenshot({path:path.join(out,key+'-rotated.png')});
+ await p.setViewportSize({width:w,height:h});await p.waitForTimeout(350);await p.locator('#work-toggle').click();await settle('work');check('About to Work releases profile',await p.evaluate(()=>!portfolioAbout.getState().visible&&document.querySelector('.about-phone-screen').hidden));
+ await p.locator('#studio-back').click();await settle('home');await p.waitForTimeout(350);const restored=await p.evaluate(()=>portfolioComposition.getState());const delta=Math.max(...restored.poses.map((x,i)=>Math.max(Math.abs(x.x-saved.poses[i].x),Math.abs(x.y-saved.poses[i].y),Math.abs(x.scale-saved.poses[i].scale))));check('Work Back restores composition',delta<1&&Math.abs(saved.progress-restored.progress)<1e-8,{delta,saved:saved.progress,restored:restored.progress});
+ await p.locator('#about-control').click();await p.waitForTimeout(120);await p.setViewportSize(rotated);await settle('about');const interrupted=await p.evaluate(measure);check('resize during phone approach settles correctly',interrupted.bounded&&interrupted.screenWithinPhone&&Math.abs(interrupted.screenScale-1)<.01,interrupted.screen);
+ await p.locator('#studio-back').click();await p.waitForTimeout(100);await p.setViewportSize({width:w,height:h});await settle('home');check('Back during resize closes About',await p.evaluate(()=>!portfolioAbout.getState().visible&&portfolioComposition.getState().phase==='home'));
+ }catch(e){check('flow completes',false,String(e));await p.screenshot({path:path.join(out,key+'-FAILED.png')}).catch(()=>{});}
+ check('no runtime errors',errors.length===0,errors);results.push({key,profiles,checks});fs.writeFileSync(path.join(out,'validation.json'),JSON.stringify(results,null,2));console.log(JSON.stringify({key,checks:checks.length,failed:checks.filter(c=>!c.pass)}));await p.close();
+}
+await browser.close();const summary={flows:results.length,checks:results.reduce((n,r)=>n+r.checks.length,0),failed:results.flatMap(r=>r.checks.filter(c=>!c.pass).map(c=>({key:r.key,...c})))};fs.writeFileSync(path.join(out,'summary.json'),JSON.stringify(summary,null,2));console.log(JSON.stringify(summary));if(summary.failed.length)process.exitCode=1;
+})().catch(e=>{console.error(e);process.exit(1)});
+
+
+

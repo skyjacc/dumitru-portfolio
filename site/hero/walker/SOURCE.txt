@@ -1,0 +1,4 @@
+Character and speech-bubble art: https://webdesign.kernjosh.com/
+Source: user-supplied local site_recon, used by explicit request 2026-11-16.
+Original WebP files preserved. Local portfolio prototype.
+The active Loading bubble uses the original loading.webp without redrawing its contour or droplets. English renders the complete original image. RO/RU reuse that same image, with only the original interior lettering masked and translated text placed above it. The hand-traced SVG contour from the previous local iteration is removed. Character frame WebPs are still rendered unchanged.

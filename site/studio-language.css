@@ -1,0 +1,30 @@
+/* The same nav-pill component as Work / Process / About. */
+#portfolio-ui #language-control{display:block;padding:0;border:0;background:none;font:inherit;z-index:2}
+#portfolio-ui #language-toggle{min-width:104px;height:44px;padding:0 15px;gap:9px;border-radius:100px;font-size:13px;font-weight:500;color:#e8e8e8}
+#portfolio-ui #language-toggle:hover{color:#181818}
+#portfolio-ui #language-toggle[aria-expanded=true]{background:#ededeb;color:#111;border-color:#ededeb}
+#portfolio-ui #language-toggle .language-globe{width:23px!important;height:24px!important;stroke-width:1.4;transform:rotate(-9deg)}
+#portfolio-ui #language-toggle .language-chevron{width:9px!important;height:9px!important;stroke-width:1.8;transition:transform .2s}
+#portfolio-ui #language-toggle[aria-expanded=true] .language-chevron{transform:rotate(180deg)}
+#portfolio-ui #language-options{position:fixed;inset:auto;margin:0;width:190px;padding:7px;background:#191919;border:1px solid #373737;border-radius:20px;color:#e8e8e8;box-shadow:0 14px 35px #0005;font:500 13px StudioSans,PersonalManrope,sans-serif;pointer-events:auto;overflow:visible}
+#portfolio-ui #language-options button{display:flex;align-items:center;justify-content:space-between;gap:20px;width:100%;min-height:44px;padding:10px 12px;border-radius:13px;font:inherit;color:inherit;text-decoration:none}
+#portfolio-ui #language-options button[aria-pressed=true]{background:#ededeb;color:#111}
+#portfolio-ui #language-options button:not([aria-pressed=true]):hover{background:#30302e;color:#fff}
+#portfolio-ui #language-options button:focus-visible{outline:2px solid currentColor;outline-offset:-3px}
+#portfolio-ui .language-choice-code{font-size:10px;letter-spacing:.04em;opacity:.65}
+#portfolio-ui #language-options::backdrop{background:transparent}
+@media(min-width:901px){#portfolio-ui .portfolio-nav{right:calc(max(clamp(24px,3vw,48px),calc(env(safe-area-inset-right) + 16px)) + 112px)}}
+@media(max-width:680px){#portfolio-ui #language-control{top:max(16px,calc(env(safe-area-inset-top) + 8px));right:max(16px,calc(env(safe-area-inset-right) + 12px))}#portfolio-ui #language-toggle{flex-direction:row;width:auto;padding:0 14px;gap:8px;line-height:1;min-width:104px}}
+@media(prefers-reduced-motion:no-preference){
+ #portfolio-ui #language-options{transition:opacity .16s,transform .16s,display .16s allow-discrete,overlay .16s allow-discrete;opacity:0;transform:translateY(-5px)}
+ #portfolio-ui #language-options:popover-open{opacity:1;transform:translateY(0)}
+ @starting-style{#portfolio-ui #language-options:popover-open{opacity:0;transform:translateY(-5px)}}
+}
+#portfolio-ui #language-options[data-fallback=true]{opacity:1;transform:none;z-index:80}
+.locale-rolling{display:inline-block;max-width:100%;position:relative}
+.locale-semantic{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip-path:inset(50%);white-space:nowrap!important}
+.locale-roll-window{display:block;position:relative;overflow:hidden;padding-bottom:.18em;margin-bottom:-.18em}
+.locale-roll-copy{display:block;white-space:inherit;line-height:inherit}
+.locale-roll-out{position:absolute;inset:0}
+.locale-roll-in{position:relative}
+@media(prefers-reduced-motion:reduce){#portfolio-ui #language-toggle .language-chevron{transition:none}}

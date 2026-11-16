@@ -1,0 +1,41 @@
+const {chromium}=require('C:/Users/oblako/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules/playwright');
+const fs=require('fs');
+const path=require('path');
+const qa=path.resolve(__dirname,'../qa/corner-ui');
+fs.mkdirSync(qa,{recursive:true});
+(async()=>{
+  const browser=await chromium.launch({channel:'chrome',headless:true});
+  const results=[];
+  for(const width of [1440,390,320]){
+    const height=width===1440?900:width===390?844:740;
+    const page=await browser.newPage({viewport:{width,height},deviceScaleFactor:1});
+    const errors=[];page.on('pageerror',e=>errors.push(e.message));
+    await page.goto('http://127.0.0.1:8943/');
+    await page.waitForFunction(()=>window.portfolioRuntime?.ready);
+    await page.waitForTimeout(3300);
+    await page.waitForFunction(()=>!window.portfolioRuntime.moving);
+    await page.screenshot({path:path.join(qa,`${width}-home.png`)});
+    const home=await page.evaluate(()=>({hint:!!document.querySelector('#home-hint'),nativeHelp:!!document.querySelector('#help-control[data-help-sticker]'),contact:document.querySelector('#contact-control')?.getAttribute('href'),camera:window.portfolioRuntime.camera}));
+    await page.locator('#help-control').focus();await page.keyboard.press('Enter');
+    await page.waitForFunction(()=>window.portfolioRuntime.helpOpen);
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(()=>!window.portfolioRuntime.helpOpen);
+    await page.locator('#work-toggle').click();
+    await page.screenshot({path:path.join(qa,`${width}-index.png`)});
+    await page.locator('#work-list [data-key="andra"]').click();
+    await page.waitForFunction(()=>window.portfolioRuntime.focusedKey==='andra'&&!window.portfolioRuntime.moving);
+    await page.waitForTimeout(200);
+    await page.screenshot({path:path.join(qa,`${width}-project.png`)});
+    const controlRects=()=>page.locator('#project-controls button,#visit-control,.portfolio-nav>button,#work-toggle').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return{id:e.id,x:r.x,y:r.y,w:r.width,h:r.height}}));
+    const before=await controlRects();await page.locator('#next-material').click();await page.waitForFunction(()=>window.portfolioRuntime.materialIndex===1);await page.waitForTimeout(900);const after=await controlRects();
+    await page.locator('#return-control').click();
+    await page.waitForFunction(()=>!window.portfolioRuntime.focusedKey&&!window.portfolioRuntime.moving);
+    const returned=await page.evaluate(()=>window.portfolioRuntime.camera);
+    await page.locator('#about-control').click();await page.waitForFunction(()=>window.portfolioRuntime.focusedKey==='despre'&&!window.portfolioRuntime.moving);
+    await page.screenshot({path:path.join(qa,`${width}-about.png`)});
+    await page.locator('#home-control').click();await page.waitForFunction(()=>!window.portfolioRuntime.focusedKey&&!window.portfolioRuntime.moving);
+    results.push({width,home,errors,controlsStable:JSON.stringify(before)===JSON.stringify(after),controlsInViewport:before.every(r=>r.x>=0&&r.y>=0&&r.x+r.w<=width&&r.y+r.h<=height),returnDelta:{x:returned.x-home.camera.x,y:returned.y-home.camera.y,zoom:returned.zoom-home.camera.zoom}});
+    await page.close();
+  }
+  fs.writeFileSync(path.join(qa,'report.json'),JSON.stringify(results,null,2));console.log(JSON.stringify(results,null,2));await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});

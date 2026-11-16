@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1442" height="812" viewBox="0 0 1442 812">
+<defs>
+ <radialGradient id="ambient" cx="78%" cy="45%" r="75%"><stop stop-color="#202020"/><stop offset=".65" stop-color="#0b0b0b"/><stop offset="1" stop-color="#050505"/></radialGradient>
+ <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#333"/><stop offset=".35" stop-color="#191919"/><stop offset="1" stop-color="#101010"/></linearGradient>
+ <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#bbb"/><stop offset=".2" stop-color="#555"/><stop offset=".5" stop-color="#1e1e1e"/><stop offset="1" stop-color="#777"/></linearGradient>
+ <linearGradient id="fade"><stop stop-color="#050505"/><stop offset="1" stop-color="#050505" stop-opacity="0"/></linearGradient>
+ <filter id="shadow" x="-.3" y="-.3" width="1.6" height="1.8"><feDropShadow dx="0" dy="22" stdDeviation="18" flood-opacity=".8"/></filter>
+</defs>
+<rect width="1442" height="812" fill="url(#ambient)"/>
+<g stroke="#555" stroke-opacity=".12" fill="none"><path d="M750 812l480-812M550 812l565-812M950 812l395-812M1150 812L1442 45M0 610h1442M0 710h1442M0 510h1442"/></g>
+<g filter="url(#shadow)">
+ <g transform="translate(980 160) rotate(12) skewY(-8)">
+  <rect width="340" height="278" rx="14" fill="url(#panel)" stroke="#555"/>
+  <path d="M0 35H340" stroke="#555"/><g fill="#737373"><circle cx="18" cy="18" r="3"/><circle cx="29" cy="18" r="3"/><circle cx="40" cy="18" r="3"/></g>
+  <rect x="25" y="62" width="176" height="12" rx="2" fill="#d4d4d4"/><rect x="25" y="86" width="137" height="8" rx="2" fill="#555"/>
+  <rect x="25" y="126" width="128" height="112" rx="5" fill="#252525" stroke="#555"/><path d="M56 180l20-28 29 45 20-24" fill="none" stroke="#aaa" stroke-width="2"/>
+  <path d="M178 132h130m-130 19h111m-111 19h120m-120 19h83" stroke="#555" stroke-width="6"/>
+  <rect x="178" y="218" width="82" height="20" rx="3" fill="#bdbdbd"/>
+ </g>
+ <g transform="translate(1055 435) rotate(-11) skewY(5)">
+  <rect width="310" height="185" rx="12" fill="url(#panel)" stroke="#555"/>
+  <path d="M20 25h270" stroke="#555"/><path d="M22 58h20m13 0h67m-87 22h55m-42 22h90m-90 22h56m-70 22h60" stroke="#b2b2b2" stroke-width="5"/>
+  <path d="M166 72l-15 17 15 17m65-34l15 17-15 17m-25-46l-15 60" fill="none" stroke="#aaa" stroke-width="3" stroke-linecap="round"/>
+ </g>
+ <g transform="translate(892 410) rotate(-12)"><rect width="100" height="200" rx="20" fill="url(#metal)" stroke="#777"/><rect x="5" y="5" width="90" height="190" rx="15" fill="#101010"/><rect x="34" y="11" width="32" height="5" rx="3" fill="#444"/><rect x="15" y="37" width="70" height="75" rx="3" fill="#292929"/><path d="M17 133h57m-57 15h43m-43 15h58" stroke="#686868" stroke-width="4"/><rect x="16" y="177" width="38" height="5" rx="2" fill="#aaa"/></g>
+</g>
+<rect width="820" height="812" fill="url(#fade)"/>
+<g fill="#9a9a9a" font-family="Arial,Helvetica,sans-serif" font-size="10" letter-spacing="2"><text x="1104" y="704">IDEA / DESIGN / BUILD</text></g>
+</svg>

@@ -1,0 +1,30 @@
+const {chromium}=require('C:/Users/oblako/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules/playwright');
+const fs=require('node:fs'),path=require('node:path');
+const out=__dirname,base='http://127.0.0.1:8943';
+const names=['notebook','phone','airpods','laptop','pack','pen','lighter','cable','receipt','scissors'];
+const html=`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/entry-flow.css"><style>body{margin:0;background:#080808}.desk-notebook{--width:17%}.desk-scissors{--x:86%;--y:84%;--width:13%;--angle:12deg}.desk-cutout{aspect-ratio:1}.desk-cutout>img{position:static;width:100%;height:auto}.studio-intro{color:white;font:18px Arial}#studio-home{opacity:1!important;visibility:visible!important;pointer-events:auto!important}@media(max-width:680px){.desk-notebook{--width:27%}.desk-scissors{--x:86%;--y:88%;--width:18%}}</style><body data-entry="home"><section id="studio-home" data-paper-reveal="done"><div class="studio-field">${names.map(name=>`<button class="desk-object desk-${name}" data-desk-object="${name}"><span class="desk-cutout"><img src="/hero/desk/${['notebook','scissors'].includes(name)?'v3':'v2'}/${name}.webp"></span><span class="desk-label">${name}</span></button>`).join('')}</div><div class="studio-intro">Dumitru — a paper workspace.</div></section><script src="/studio-composition.js"></script><script>portfolioComposition.mount(document.querySelector('#studio-home'));portfolioComposition.setEnabled(true)</script>`;
+(async()=>{
+ const browser=await chromium.launch({channel:'chrome',headless:true}),results=[];
+ for(const scenario of[{name:'desktop',w:1440,h:900},{name:'phone',w:390,h:844,touch:true},{name:'small-phone',w:320,h:568,touch:true},{name:'reduced',w:1440,h:900,reduce:true}]){
+  const c=await browser.newContext({viewport:{width:scenario.w,height:scenario.h},hasTouch:!!scenario.touch,isMobile:!!scenario.touch,reducedMotion:scenario.reduce?'reduce':'no-preference'}),p=await c.newPage(),errors=[],checks=[];
+  p.on('pageerror',e=>errors.push(e.message));await p.route('**/__composition-test',r=>r.fulfill({status:200,contentType:'text/html',body:html}));await p.goto(base+'/__composition-test');await p.waitForTimeout(600);
+  const state=()=>p.evaluate(()=>portfolioComposition.getState());const check=(label,pass,detail)=>checks.push({label,pass,detail});
+  check('mount has ten props',(await state()).objectCount===10);
+  await p.mouse.move(scenario.w*.5,scenario.h*.48);await p.mouse.wheel(0,1250);await p.waitForFunction(()=>!portfolioComposition.getState().active);const first=await state();check('scroll selects next composition',Math.abs(first.progress-1)<.001,first.progress);
+  await p.screenshot({path:path.join(out,scenario.name+'-layout1.png')});
+  await p.mouse.wheel(0,1250);await p.waitForFunction(()=>!portfolioComposition.getState().active);check('second composition',Math.abs((await state()).progress-2)<.001);
+  await p.screenshot({path:path.join(out,scenario.name+'-layout2.png')});
+  await p.mouse.wheel(0,1250);await p.waitForFunction(()=>!portfolioComposition.getState().active);check('wrap returns layout zero',(await state()).progress<.001);
+  await p.mouse.wheel(0,650);await p.waitForFunction(()=>!portfolioComposition.getState().active);const saved=await state();
+  const result=await p.evaluate(async()=>{let a=await portfolioComposition.scatter({duration:100}),edge=portfolioComposition.getState(),b=await portfolioComposition.restore({duration:100});portfolioComposition.setEnabled(true);return{a,b,edge,home:portfolioComposition.getState()}});
+  check('scatter settles at perimeter',result.a&&result.edge.phase==='edge');check('restore keeps exact progress',result.b&&Math.abs(result.home.progress-saved.progress)<1e-8);
+  check('restore keeps exact object poses',result.home.poses.every((v,i)=>Math.abs(v.x-saved.poses[i].x)<.001&&Math.abs(v.y-saved.poses[i].y)<.001));
+  if(!scenario.reduce){const interrupt=await p.evaluate(async()=>{let first=portfolioComposition.scatter({duration:400});await new Promise(r=>setTimeout(r,50));let second=portfolioComposition.restore({duration:80});return{first:await first,second:await second,state:portfolioComposition.getState()}});check('interrupted flight resolves and restores',interrupt.first===false&&interrupt.second===true&&interrupt.state.phase==='home');}
+  await p.evaluate(()=>portfolioComposition.setEnabled(false));const paused=await state();await p.mouse.wheel(0,1250);await p.waitForTimeout(200);check('disabled scene ignores wheel',(await state()).progress===paused.progress);
+  await p.evaluate(()=>portfolioComposition.setEnabled(true));
+  const idle=await p.evaluate(async()=>{let n=0,o=new MutationObserver(records=>n+=records.filter(r=>r.attributeName==='style').length);o.observe(document.querySelector('.studio-field'),{subtree:true,attributes:true});await new Promise(r=>setTimeout(r,300));o.disconnect();return n});check('no idle transform loop',idle===0,idle);
+  if(scenario.touch){const session=await c.newCDPSession(p);const prev=(await state()).progress;await session.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:scenario.w*.5,y:scenario.h*.62}]});for(let k=1;k<=8;k++){await session.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:scenario.w*.5,y:scenario.h*.62-k*22}]});await p.waitForTimeout(16)}await session.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await p.waitForFunction(()=>!portfolioComposition.getState().active);check('trusted touch swipe changes composition',Math.abs((await state()).progress-prev)>.1);}
+  check('no page errors',errors.length===0,errors);results.push({scenario,checks,errors});await c.close();
+ }
+ await browser.close();const report={results,summary:{checks:results.reduce((n,s)=>n+s.checks.length,0),failed:results.flatMap(s=>s.checks.filter(c=>!c.pass).map(c=>({scenario:s.scenario.name,...c})))}};fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report.summary));if(report.summary.failed.length)process.exitCode=1;
+})().catch(e=>{console.error(e);process.exitCode=1});

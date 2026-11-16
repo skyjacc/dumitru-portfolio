@@ -1,0 +1,40 @@
+/* Reference artwork, adapted only for the existing black navigation. */
+#portfolio-ui .studio-nav .nav-pill{overflow:visible;isolation:isolate;transform-origin:50% 50%}
+#portfolio-ui .studio-nav .nav-pill:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+#portfolio-ui .studio-nav-icon{position:relative;display:flex;align-items:center;justify-content:center;flex:0 0 25px;width:25px;height:28px;pointer-events:none;overflow:visible}
+#portfolio-ui .studio-nav-icon img{display:block;max-width:none;object-fit:contain;pointer-events:none;filter:invert(1);transition:filter .18s}
+#portfolio-ui .studio-nav .nav-pill:is(:hover,[aria-current=page],[aria-expanded=true]) .studio-nav-icon img{filter:invert(0)}
+#portfolio-ui .studio-hammer-offset{display:block;position:absolute;left:52.5%;top:50%;transform:translate(-50%,-50%);transition:translate .35s cubic-bezier(.22,1,.36,1)}
+#portfolio-ui .studio-hammer{height:24px;width:auto;transform-origin:50% 92%}
+#portfolio-ui .studio-work-letter{display:inline-block;white-space:pre}
+#portfolio-ui .studio-nav [data-copy="ui.work"]{display:inline-block}
+#portfolio-ui .studio-process-icon{width:28px;flex-basis:28px}
+#portfolio-ui .studio-eyes{width:28px;flex-basis:28px}
+#portfolio-ui .studio-eye-art{display:block;width:92%!important;height:auto!important;aspect-ratio:320/252;overflow:hidden;filter:invert(1);transition:filter .18s}
+#portfolio-ui .studio-nav .nav-pill:is(:hover,[aria-current=page],[aria-expanded=true]) .studio-eye-art{filter:invert(0)}
+#portfolio-ui .studio-nav-icon .studio-process-mark{width:auto;height:auto;max-width:72%;max-height:72%;opacity:.95;transform:rotate(150deg);transform-origin:50% 50%}
+#portfolio-ui .studio-heart{width:24px;height:26px;transform-origin:50% 50%}
+#portfolio-ui .studio-back[hidden]{display:none!important}
+#portfolio-ui .studio-back-icon{width:28px;flex-basis:28px}
+#portfolio-ui .studio-back-arrow{width:24px!important;height:20px!important;overflow:visible;transform-box:fill-box;transform-origin:50% 50%;transform:rotate(13deg);pointer-events:none}
+#portfolio-ui .studio-back-arrow path{fill:none;stroke-width:4.2;pointer-events:none}
+#portfolio-ui .studio-arrowhead{filter:invert(1);transition:filter .18s}
+#portfolio-ui .studio-back:hover{background:#363636;color:#ededed;border-color:#555}
+/* Keep the navigation operable throughout a return flight. */
+body[data-returning=true] #portfolio-ui .studio-nav{visibility:visible;pointer-events:auto}
+@media(prefers-reduced-motion:no-preference){
+ #portfolio-ui .studio-back:not([hidden]){animation:studioBackPillIn .22s cubic-bezier(.22,1,.36,1) both}
+ @keyframes studioBackPillIn{from{opacity:0;translate:8px 0}to{opacity:1;translate:0 0}}
+}
+@media(max-width:600px){
+ #portfolio-ui .studio-nav.studio-nav-has-back{grid-template-columns:repeat(5,minmax(0,1fr));max-width:500px}
+ #portfolio-ui .studio-nav .studio-nav-icon{width:23px;height:23px;flex:0 0 23px}
+ #portfolio-ui .studio-hammer{height:22px}
+ #portfolio-ui .studio-heart{width:22px;height:22px}
+ #portfolio-ui .studio-back-arrow{width:22px!important;height:19px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #portfolio-ui .studio-hammer-offset{transition:none}
+}
+/* Reference's paper ink burst is global, above every surface, with no hit area. */
+.studio-click-burst{position:fixed;z-index:12000;pointer-events:none;width:90px;height:90px;object-fit:contain;translate:-50% -50%;filter:invert(1);mix-blend-mode:difference;user-select:none}

@@ -1,0 +1,1 @@
+function gd(e){if(!e)return;e.classList.remove(`is-circle-in`);let t=e.querySelector(`.process-step`),n=()=>{e.classList.add(`is-circle-in`);let t=e.querySelector(`.process-list`);t&&t.dispatchEvent(new CustomEvent(`process:reveal`))};t?t.addEventListener(`animationend`,n,{once:!0}):n()}

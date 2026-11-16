@@ -1,0 +1,488 @@
+{
+  "caseCount": 5,
+  "aboutKey": "despre",
+  "processKey": "process",
+  "projects": [
+    {
+      "key": "andra",
+      "kind": "screens",
+      "tier": "regular",
+      "type": "Concept independent",
+      "name": "ANDRA",
+      "description": "Flori, animație și contact direct cu atelierul.",
+      "images": [
+        "/assets/projects/andra/desktop.webp",
+        "/assets/hero-bouquet-hd.mp4",
+        "/assets/projects/andra/mobile-preview.svg",
+        "/assets/projects/andra/bloom.mp4"
+      ],
+      "materialSources": [
+        "/assets/projects/andra/desktop.webp",
+        "/assets/hero-bouquet-hd.mp4",
+        "/assets/projects/andra/mobile.webp",
+        "/assets/projects/andra/bloom.mp4"
+      ],
+      "portfolioCase": true,
+      "externalUrl": "https://andra-floral-concept.vercel.app/",
+      "materialLabels": [
+        "Pagina principală",
+        "Buchet în mișcare · AI",
+        "Versiunea mobilă",
+        "Înflorire · animație AI"
+      ]
+    },
+    {
+      "key": "btb",
+      "kind": "screens",
+      "tier": "regular",
+      "type": "Concept independent",
+      "name": "BTB Mobilă",
+      "description": "O bucătărie 3D, cu detalii și etape de asamblare.",
+      "images": [
+        "/assets/projects/btb/desktop.webp",
+        "/assets/projects/btb/assembly.webp",
+        "/assets/projects/btb/detail.webp",
+        "/assets/projects/btb/mobile-preview.svg"
+      ],
+      "materialSources": [
+        "/assets/projects/btb/desktop.webp",
+        "/assets/projects/btb/assembly.webp",
+        "/assets/projects/btb/detail.webp",
+        "/assets/projects/btb/mobile.webp"
+      ],
+      "portfolioCase": true,
+      "externalUrl": "https://btb-mobila-concept.vercel.app/",
+      "materialLabels": [
+        "Bucătărie 3D interactivă",
+        "Etapele de asamblare",
+        "Nișă și materiale",
+        "Versiunea mobilă"
+      ]
+    },
+    {
+      "key": "fkd",
+      "kind": "screens",
+      "tier": "regular",
+      "type": "Concept independent",
+      "name": "FKD Auto Service",
+      "description": "Servicii auto și un formular demonstrativ de solicitare.",
+      "images": [
+        "/assets/projects/fkd/desktop.webp",
+        "/assets/projects/fkd/request.webp",
+        "/assets/projects/fkd/summary.webp",
+        "/assets/projects/fkd/mobile-preview.svg"
+      ],
+      "materialSources": [
+        "/assets/projects/fkd/desktop.webp",
+        "/assets/projects/fkd/request.webp",
+        "/assets/projects/fkd/summary.webp",
+        "/assets/projects/fkd/mobile.webp"
+      ],
+      "portfolioCase": true,
+      "externalUrl": "https://fkd-concept-cluj.vercel.app/",
+      "materialLabels": [
+        "Servicii și contact",
+        "Formular demonstrativ · alegerea mașinii",
+        "Rezumat local · fără trimitere",
+        "Versiunea mobilă"
+      ]
+    },
+    {
+      "key": "ora",
+      "kind": "screens",
+      "tier": "regular",
+      "type": "Concept independent · brand fictiv",
+      "name": "ORA LENTĂ",
+      "description": "Un refugiu imaginar la munte, cu un plan de sejur.",
+      "images": [
+        "/assets/projects/ora/desktop.webp",
+        "/assets/projects/ora/rooms.webp",
+        "/assets/projects/ora/planner.webp",
+        "/assets/projects/ora/mobile-preview.svg"
+      ],
+      "materialSources": [
+        "/assets/projects/ora/desktop.webp",
+        "/assets/projects/ora/rooms.webp",
+        "/assets/projects/ora/planner.webp",
+        "/assets/projects/ora/mobile.webp"
+      ],
+      "portfolioCase": true,
+      "externalUrl": "https://ora-lenta-concept.vercel.app/",
+      "materialLabels": [
+        "Pagina principală",
+        "Prezentarea camerelor",
+        "Plan de sejur demonstrativ",
+        "Versiunea mobilă"
+      ]
+    },
+    {
+      "key": "bonanza",
+      "kind": "screens",
+      "tier": "regular",
+      "type": "Concept independent",
+      "name": "Bonanza",
+      "description": "Restaurant, evenimente și cazare, cu trasee clare de explorat.",
+      "images": [
+        "/assets/projects/bonanza/desktop.webp",
+        "/assets/projects/bonanza/gallery.webp",
+        "/assets/projects/bonanza/events.webp",
+        "/assets/projects/bonanza/mobile-preview.svg"
+      ],
+      "materialSources": [
+        "/assets/projects/bonanza/desktop.webp",
+        "/assets/projects/bonanza/gallery.webp",
+        "/assets/projects/bonanza/events.webp",
+        "/assets/projects/bonanza/mobile.webp"
+      ],
+      "portfolioCase": true,
+      "externalUrl": "https://bonanza-concept-cluj.vercel.app/",
+      "materialLabels": [
+        "Pagina principală",
+        "Galerie de fotografii",
+        "Evenimente · formular demonstrativ",
+        "Versiunea mobilă"
+      ]
+    },
+    {
+      "key": "despre",
+      "kind": "screens",
+      "tier": "regular",
+      "type": "Despre mine",
+      "name": "Dumitru",
+      "description": "",
+      "images": [
+        "/assets/about/phone/profile-en.svg"
+      ],
+      "surface": "about",
+      "surfaceMedia": {
+        "en": [
+          "/assets/about/phone/profile-en.svg",
+          "/assets/about/phone/photo-1-en.svg",
+          "/assets/about/phone/photo-2-en.svg",
+          "/assets/about/phone/photo-3-en.svg",
+          "/assets/about/phone/photo-4-en.svg",
+          "/assets/about/phone/photo-5-en.svg",
+          "/assets/about/phone/photo-6-en.svg"
+        ],
+        "ro": [
+          "/assets/about/phone/profile-ro.svg",
+          "/assets/about/phone/photo-1-ro.svg",
+          "/assets/about/phone/photo-2-ro.svg",
+          "/assets/about/phone/photo-3-ro.svg",
+          "/assets/about/phone/photo-4-ro.svg",
+          "/assets/about/phone/photo-5-ro.svg",
+          "/assets/about/phone/photo-6-ro.svg"
+        ],
+        "ru": [
+          "/assets/about/phone/profile-ru.svg",
+          "/assets/about/phone/photo-1-ru.svg",
+          "/assets/about/phone/photo-2-ru.svg",
+          "/assets/about/phone/photo-3-ru.svg",
+          "/assets/about/phone/photo-4-ru.svg",
+          "/assets/about/phone/photo-5-ru.svg",
+          "/assets/about/phone/photo-6-ru.svg"
+        ]
+      },
+      "portfolioCase": false,
+      "externalUrl": "https://www.instagram.com/_obllako_/",
+      "externalAction": "instagram",
+      "materialLabels": [
+        "Despre"
+      ]
+    },
+    {
+      "key": "process",
+      "kind": "screens",
+      "tier": "regular",
+      "type": "Process",
+      "name": "Process",
+      "description": "",
+      "images": [
+        "/assets/process/step-0-en.svg"
+      ],
+      "surface": "process",
+      "surfaceMedia": {
+        "en": [
+          "/assets/process/step-0-en.svg",
+          "/assets/process/step-1-en.svg",
+          "/assets/process/step-2-en.svg",
+          "/assets/process/step-3-en.svg",
+          "/assets/process/step-4-en.svg"
+        ],
+        "ro": [
+          "/assets/process/step-0-ro.svg",
+          "/assets/process/step-1-ro.svg",
+          "/assets/process/step-2-ro.svg",
+          "/assets/process/step-3-ro.svg",
+          "/assets/process/step-4-ro.svg"
+        ],
+        "ru": [
+          "/assets/process/step-0-ru.svg",
+          "/assets/process/step-1-ru.svg",
+          "/assets/process/step-2-ru.svg",
+          "/assets/process/step-3-ru.svg",
+          "/assets/process/step-4-ru.svg"
+        ]
+      },
+      "portfolioCase": false,
+      "materialLabels": [
+        "Process"
+      ]
+    }
+  ],
+  "dimensions": {
+    "/assets/projects/andra/desktop.webp": [
+      1920,
+      1631
+    ],
+    "/assets/projects/andra/mobile-preview.svg": [
+      390,
+      844
+    ],
+    "/assets/projects/btb/desktop.webp": [
+      1440,
+      900
+    ],
+    "/assets/projects/btb/assembly.webp": [
+      1440,
+      900
+    ],
+    "/assets/projects/btb/detail.webp": [
+      1440,
+      900
+    ],
+    "/assets/projects/btb/mobile-preview.svg": [
+      390,
+      844
+    ],
+    "/assets/projects/fkd/desktop.webp": [
+      1440,
+      1000
+    ],
+    "/assets/projects/fkd/request.webp": [
+      1440,
+      1260
+    ],
+    "/assets/projects/fkd/summary.webp": [
+      1440,
+      1260
+    ],
+    "/assets/projects/fkd/mobile-preview.svg": [
+      390,
+      844
+    ],
+    "/assets/projects/ora/desktop.webp": [
+      1440,
+      1000
+    ],
+    "/assets/projects/ora/rooms.webp": [
+      1440,
+      1000
+    ],
+    "/assets/projects/ora/planner.webp": [
+      1440,
+      900
+    ],
+    "/assets/projects/ora/mobile-preview.svg": [
+      390,
+      844
+    ],
+    "/assets/projects/bonanza/desktop.webp": [
+      1440,
+      1000
+    ],
+    "/assets/projects/bonanza/gallery.webp": [
+      1440,
+      1000
+    ],
+    "/assets/projects/bonanza/events.webp": [
+      1440,
+      1000
+    ],
+    "/assets/projects/bonanza/mobile-preview.svg": [
+      390,
+      844
+    ],
+    "/assets/about/phone/profile-en.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-1-en.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-2-en.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-3-en.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-4-en.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-5-en.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-6-en.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/profile-ro.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-1-ro.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-2-ro.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-3-ro.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-4-ro.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-5-ro.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-6-ro.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/profile-ru.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-1-ru.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-2-ru.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-3-ru.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-4-ru.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-5-ru.svg": [
+      540,
+      1000
+    ],
+    "/assets/about/phone/photo-6-ru.svg": [
+      540,
+      1000
+    ],
+    "/assets/process/step-0-en.svg": [
+      750,
+      1000
+    ],
+    "/assets/process/step-1-en.svg": [
+      750,
+      1000
+    ],
+    "/assets/process/step-2-en.svg": [
+      750,
+      1000
+    ],
+    "/assets/process/step-3-en.svg": [
+      750,
+      1000
+    ],
+    "/assets/process/step-4-en.svg": [
+      750,
+      1000
+    ],
+    "/assets/process/step-0-ro.svg": [
+      750,
+      1000
+    ],
+    "/assets/process/step-1-ro.svg": [
+      750,
+      1000
+    ],
+    "/assets/process/step-2-ro.svg": [
+      750,
+      1000
+    ],
+    "/assets/process/step-3-ro.svg": [
+      750,
+      1000
+    ],
+    "/assets/process/step-4-ro.svg": [
+      750,
+      1000
+    ],
+    "/assets/process/step-0-ru.svg": [
+      750,
+      1000
+    ],
+    "/assets/process/step-1-ru.svg": [
+      750,
+      1000
+    ],
+    "/assets/process/step-2-ru.svg": [
+      750,
+      1000
+    ],
+    "/assets/process/step-3-ru.svg": [
+      750,
+      1000
+    ],
+    "/assets/process/step-4-ru.svg": [
+      750,
+      1000
+    ],
+    "/assets/hero-bouquet-hd.jpg": [
+      1672,
+      941
+    ],
+    "/assets/hero-bouquet-hd.mp4": [
+      1916,
+      1080
+    ],
+    "/assets/projects/andra/bloom.jpg": [
+      960,
+      960
+    ],
+    "/assets/projects/andra/bloom.mp4": [
+      960,
+      960
+    ]
+  },
+  "videoPosters": [
+    {
+      "video": "/assets/hero-bouquet-hd.mp4",
+      "poster": "/assets/projects/andra/bouquet-poster.webp",
+      "output": "/assets/hero-bouquet-hd.jpg"
+    },
+    {
+      "video": "/assets/projects/andra/bloom.mp4",
+      "poster": "/assets/projects/andra/bloom-poster.webp",
+      "output": "/assets/projects/andra/bloom.jpg"
+    }
+  ],
+  "routes": [
+    "/work/andra",
+    "/work/btb",
+    "/work/fkd",
+    "/work/ora",
+    "/work/bonanza",
+    "/work/despre",
+    "/work/process"
+  ]
+}

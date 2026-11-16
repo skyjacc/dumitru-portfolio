@@ -1,0 +1,22 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const {chromium}=require('C:/Users/oblako/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules/playwright');
+const origin='https://dumitru-spatial-portfolio.vercel.app';
+(async()=>{
+ const entry=JSON.parse(fs.readFileSync(path.join(__dirname,'manifest.json'),'utf8')).find(f=>f.file==='_next/static/chunks/1l2px902fb04m.js');
+ const response=await fetch(origin+'/'+entry.file+'?review=noise-restored'),bytes=Buffer.from(await response.arrayBuffer());
+ const checks=[{name:'published bundle matches tested local file',pass:response.ok&&bytes.length===entry.size&&crypto.createHash('sha1').update(bytes).digest('hex')===entry.sha}];
+ const browser=await chromium.launch({channel:'chrome',headless:true});
+ const page=await browser.newPage({viewport:{width:1440,height:900}}),errors=[];
+ page.on('pageerror',e=>errors.push(String(e)));
+ await page.goto(origin+'/?review=noise-restored');
+ await page.waitForFunction(()=>portfolioEntry?.ready&&portfolioLoader.getState().phase==='complete',null,{timeout:45000});
+ await page.locator('#work-toggle').click();
+ await page.waitForFunction(()=>portfolioEntry.mode==='work'&&!portfolioEntry.pending&&!portfolioRuntime.moving);
+ const point=await page.evaluate(()=>portfolioWorkGeometry().projects.find(p=>p.key==='btb'));
+ await page.mouse.move(point.x,point.y);await page.waitForTimeout(250);
+ await page.screenshot({path:path.join(__dirname,'public-hover.png')});
+ checks.push({name:'public Work opens with five projects and companion',pass:await page.evaluate(()=>portfolioWorkGeometry().projects.length===5&&portfolioCompanion.getState().active)});
+ checks.push({name:'no browser errors',pass:errors.length===0,errors});
+ await browser.close();fs.writeFileSync(path.join(__dirname,'public-report.json'),JSON.stringify(checks,null,2));
+ console.log(JSON.stringify({checks:checks.length,failures:checks.filter(c=>!c.pass)}));if(checks.some(c=>!c.pass))process.exitCode=1;
+})().catch(e=>{console.error(e);process.exitCode=1});

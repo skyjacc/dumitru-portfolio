@@ -1,0 +1,18 @@
+# Local refinement review — 2026-11-16
+
+Scope: bounded navigation eyes, language capsule/text changes, phone/scatter motion and the native Work backdrop. Everything remains local at `http://127.0.0.1:8943/`; no deployment was performed. Existing Home compositions, explicit Work entry and project camera/material behavior remain the interaction contract.
+
+| Area | Evidence and result |
+| --- | --- |
+| Eyes | [Notes](eyes/NOTES.md), [checks](eyes/checks.json), [eight-direction capture](eyes/after-eight-directions.png). Three passing modes × eight directions: desktop pupils remain bounded; touch/reduced motion stay neutral. Outer outlines stay fixed; center/leave/blur restore neutral. Exact reference trajectory is intentionally superseded because its north pose also crosses the outline. |
+| Languages | [85/85 checks](languages/report.json) across desktop, tablet, mobile, small viewport and reduced motion. [Final visual pass: 12/12](languages/final-visual-report.json) at desktop 1440px and touch 390px covers Home, Process, About and navigation cancellation. [Desktop Home](languages/desktop-final-home.png), [mobile About during flip](languages/mobile-final-about-flip.png). |
+| Motion | [Reference/local comparison](motion/review.html), [notes](motion/NOTES.md), [41/41 checks](motion/validation.json) and [timed geometry](motion/comparison.json). Desktop, touch portrait, orientation change and reduced motion cover mid-flight resize/locale changes, interrupted Back, scatter and saved-composition return. |
+| Work frame | [Implementation/evidence](frame/README.md), [10/10 checks](frame/after-report.json), [unchanged cameras](frame/geometry-report.json), [pixel samples](frame/pixel-report.json), [forced Canvas2D fallback](frame/fallback-report.json). [Desktop](frame/after-desktop-work.png) and [mobile](frame/after-mobile-work.png) show the full-canvas neutral black background. |
+
+The language capsule stays EN / RO / RU. Short visible UI roots receive a decorative split-flap transition (100 characters per root, 220 glyphs total); long paragraphs update normally and remain readable. Semantic text changes immediately. New locale requests or navigation/resize/scroll/visibility changes clear the temporary layer, and reduced motion skips it. The final visual sequence recorded no observed tasks over 50ms; this was not a throttled performance benchmark.
+
+Motion now preserves each prop's visible pose through resize, recalculates its destination and consumes the remaining portion of the original fourth-power easing curve. It neither jumps straight to the destination nor restarts an ease-in. About retreat restores the surrounding props while the phone shrinks, and only the intended navigation destination is highlighted. The comparison page preserves before/reference/final recordings; consult recorded action timestamps rather than inferring exact timing from screenshot filenames.
+
+Work and its entry scatter bypass only the native outer display mask and vignette. All ten sampled blank background locations are RGB 8,8,8. Camera/layout helpers, project-card masks and detail presentation are unchanged. Reapply with `node scripts/adapt-unframed-work.cjs`; validate with `--check`. See [the bounded reapply order](../../scripts/ENTRY.md#reapply-order).
+
+Modern Web Guidance notes are retained in [guides.md](guides.md), [motion guidance](motion/guides.md), and the component notes above. Measurements are scoped Chromium desktop/emulated-touch observations, with a forced Canvas2D fallback for Work. They do not establish physical-phone coverage, Safari compatibility, every network condition or a guaranteed frame rate. Earlier evidence in `qa/home-composition/` remains historical where this review supersedes it.

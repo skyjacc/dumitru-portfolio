@@ -1,0 +1,57 @@
+# Local credentials, services and dependencies
+.env
+.env.*
+!.env.example
+node_modules/
+.vercel/
+__pycache__/
+*.pyc
+*.log
+.DS_Store
+Thumbs.db
+.playwright-mcp/
+
+# Keep review scripts and written findings, not the large capture archive.
+/qa/**/*
+!/qa/**/
+!/qa/**/*.cjs
+!/qa/**/*.js
+!/qa/**/*.py
+!/qa/**/*.md
+!/qa/board-follow/manifest.json
+
+# Generation job metadata is not needed to run or understand the site.
+/scripts/desk-generation.json
+/scripts/desk-quality-v2.json
+/scripts/workbench-generation.json
+
+# Superseded assets excluded from the published site.
+/site/hero/desk/assets.json
+/site/hero/desk/v2/assets.json
+/site/hero/desk/v2/responsive/manifest.json
+/site/hero/desk/v3/manifest.json
+/site/assets/about/authored/
+/site/assets/about/instagram/sources.json
+/site/assets/about/intro.svg
+/site/assets/about/intro-en.svg
+/site/assets/about/intro-ro.svg
+/site/assets/about/intro-ru.svg
+/site/assets/process/design-report.json
+/site/assets/about/contact.svg
+/site/assets/about/process.svg
+/site/hero/objects/
+/site/hero/personal-emblem.png
+/site/hero/sigil-emblem.png
+/site/hero/sigil-loop.mp4
+/site/hero/work-andra.svg
+/site/hero/workbench/
+/site/hero/paper-laptop-master.png
+/site/hero/paper-laptop-clean.png
+
+# These exclusions also apply below the QA text-file exceptions above.
+**/node_modules/
+**/__pycache__/
+**/.env
+**/.env.*
+**/.vercel/
+**/*.pyc

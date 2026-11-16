@@ -1,0 +1,98 @@
+/* Personal paper desk. Geometry is authored here; the controller changes transforms only. */
+#studio-home{font-family:StudioSans,PersonalManrope,Arial,sans-serif}
+#studio-title{font-family:StudioSans,PersonalManrope,Arial,sans-serif;font-size:clamp(16px,1.25vw,21px);font-weight:400;letter-spacing:-.015em;line-height:1.9;color:#cececa}
+#studio-title strong{font-weight:500;color:#f1f0ec}
+#studio-title em{position:relative;display:inline-block;padding:0 .1em;font:500 1.65em/1 StudioHand,cursive;letter-spacing:0;color:#f4f1e9;transform:rotate(-4deg)}
+#studio-title em::after{content:'';position:absolute;left:4%;right:3%;height:6px;bottom:-3px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 8'%3E%3Cpath d='M2 6Q39 1 97 3' fill='none' stroke='%23ccc8bc' stroke-width='1.2'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+.studio-intro{width:max-content;max-width:min(850px,74vw);transition:opacity .3s}
+.desk-label{font-family:StudioHand,PersonalManrope,sans-serif;font-size:clamp(16px,1.25vw,20px);font-weight:500;letter-spacing:.01em;color:#c5c3bc}
+.desk-label svg{width:13px;height:13px}
+.desk-notebook{--width:17%;--x:18%;--y:25%;--angle:-10deg}
+.desk-notebook .desk-label{left:30%;top:calc(100% + 4px)}
+.desk-pen{--x:33%;--y:27%}
+.desk-cable{--width:12%;--x:90%;--y:55%;--angle:8deg}
+.desk-scissors{--width:13%;--x:82%;--y:80%;--angle:12deg;z-index:2}
+.desk-receipt{--x:80%;--y:55%}
+.desk-laptop .desk-label.desk-work-hint{right:-18%;bottom:25%;min-height:0;pointer-events:none}
+.desk-work-prompt{position:absolute;right:0;bottom:calc(100% - 3px);font-size:clamp(1.125rem,1.55vw,1.625rem);line-height:1.1;transform:rotate(-7deg);color:#d5d0c5}
+/* Only the paper silhouette receives pointer input; the native button keeps keyboard focus. */
+button.desk-laptop,button.desk-laptop .desk-cutout{pointer-events:none}
+button.desk-laptop .desk-cutout::after{content:'';position:absolute;inset:0;clip-path:polygon(2.99% 4.48%,1.90% 7.16%,9.24% 48.01%,3.35% 88.20%,4.62% 96.09%,19.20% 97.80%,52.72% 96.58%,57.25% 98.29%,86.32% 98.13%,95.47% 96.42%,97.83% 91.62%,91.30% 48.17%,98.10% 9.85%,97.55% 5.37%,92.93% 2.93%,18.30% 3.42%,13.04% 1.71%);pointer-events:none}
+body[data-entry=home] button.desk-laptop .desk-cutout::after{pointer-events:auto}
+.desk-work-arrow{display:block;width:clamp(54px,5.5vw,92px);height:auto;pointer-events:none}
+@keyframes desk-arrow-tap{0%,100%{translate:0 0}42%{translate:-5px -4px}72%{translate:1px 1px}}
+@media(hover:hover) and (pointer:fine){.desk-laptop:is(:hover,:focus-visible) .desk-work-arrow{animation:desk-arrow-tap .42s ease-out 1}}
+body[data-entry=process] #studio-home{opacity:1;visibility:visible;pointer-events:auto}
+body[data-entry=process] #portfolio-root{opacity:0;pointer-events:none}
+body[data-entry=process] #project-controls{display:none!important}
+body[data-entry=about] #studio-home{opacity:1;visibility:visible;pointer-events:auto}
+body[data-entry=about] #portfolio-root{opacity:0;pointer-events:none}
+body[data-entry=about] #project-controls{display:none!important}
+body[data-entry=about] .studio-intro,body[data-entry=about] .desk-label{opacity:0}
+body[data-entry=about] .desk-object:not(.desk-phone){opacity:.14}
+body[data-entry=about] #studio-home[data-retreat=true] .desk-object:not(.desk-phone){opacity:1;transition:opacity .6s ease .18s}
+body[data-entry=about] .desk-phone{z-index:20;pointer-events:auto}
+body[data-entry=process] .studio-intro,body[data-entry=leaving] .studio-intro{opacity:0;pointer-events:none}
+body[data-entry=process] .desk-label,body[data-entry=leaving] .desk-label{opacity:0}
+body[data-entry=leaving] #studio-home[data-exit=work],body[data-entry=work] #studio-home{visibility:visible;opacity:1;background:transparent;pointer-events:none}
+body[data-entry=leaving] .desk-object{opacity:1}
+body[data-entry=leaving] #portfolio-root{opacity:1;transition:opacity .35s ease .45s}
+body[data-entry=work] .studio-intro,body[data-entry=work] .desk-label,body[data-entry=detail] .studio-intro,body[data-entry=detail] .desk-label{opacity:0}
+body[data-entry=work] #studio-home .desk-object{pointer-events:none}
+body[data-entry=process] .studio-field{pointer-events:none}
+body:has(.studio-nav) .process-back{display:none}
+#portfolio-ui{font-family:StudioSans,PersonalManrope,Arial,sans-serif}
+#portfolio-ui .nav-pill{font-weight:500}
+#language-control,#material-dots button{font-family:StudioSans,PersonalManrope,Arial,sans-serif}
+.paper-click{position:fixed;z-index:200;pointer-events:none;width:26px;height:26px;translate:-50% -50%;color:#d5d0c5}
+.paper-click svg{width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:1.3;stroke-linecap:round}
+@media(min-width:1900px){.desk-notebook{--width:17%}}
+@media(max-width:1000px) and (min-width:681px){
+ .desk-notebook{--width:17%;--x:18%;--y:26%}.desk-laptop{--width:min(32%,38svh)}
+ .desk-cable{--width:12%;--x:91%;--y:55%}.desk-scissors{--width:12%;--x:82%;--y:82%}
+ .desk-receipt{--x:83%;--y:57%}
+}
+@media(max-width:680px){
+ .studio-intro{width:calc(100% - 48px);max-width:320px}
+ #studio-title{font-size:16px;line-height:1.7;text-wrap:balance}
+ #studio-title em{font-size:1.7em}
+ .desk-notebook{--width:25%;--x:21%;--y:14%;--angle:-10deg}
+ .desk-notebook .desk-label{left:12%;top:calc(100% + 2px)}
+ .desk-pen{--x:42%;--y:15%;--angle:14deg}
+ .desk-phone{--x:63%;--y:12%}.desk-airpods{--x:84%;--y:25%}
+ .desk-laptop{--width:58%;--x:45%;--y:68%}
+ .desk-pack{--x:84%;--y:51%}
+ .desk-laptop .desk-label{right:-19%;bottom:21%}
+ .desk-laptop .desk-label.desk-work-hint{right:-20%;bottom:31%}.desk-work-arrow{width:48px}
+ .desk-cable{--width:17%;--x:91%;--y:54%}
+ .desk-scissors{--width:18%;--x:85%;--y:81%;--angle:14deg}
+ .desk-receipt{--width:10%;--x:72%;--y:92%;--angle:-14deg}
+ .desk-label{font-size:16px;min-height:32px}
+}
+@media(max-width:680px) and (max-height:700px){
+ .studio-intro{top:calc(var(--desk-top) + (100% - var(--desk-top) - env(safe-area-inset-bottom))*.405)}
+ .desk-airpods{--y:20%}
+ .desk-pack{--x:88%}
+ .desk-notebook{--width:23%;--y:14%}.desk-laptop{--width:48%;--x:45%;--y:70%}
+ .desk-cable{--width:14%}.desk-scissors{--width:15%;--y:83%}.desk-receipt{--width:9%}
+ #studio-title{font-size:14px;line-height:1.7}.desk-label{font-size:14px}
+}
+@media(max-height:520px) and (min-width:681px){
+ .desk-notebook{--width:13%;--y:25%}.desk-cable{--width:10%}.desk-scissors{--width:10%}
+ #studio-title{font-size:14px}.desk-label{font-size:15px}
+}
+@media(max-height:520px) and (min-width:681px) and (max-width:1000px){
+ .studio-intro{left:48%;top:calc(var(--desk-top) + (100% - var(--desk-top) - env(safe-area-inset-bottom))*.21);width:max-content;max-width:65vw}.desk-notebook{--width:11%;--x:14%;--y:33%}
+ .desk-cable{--width:8%;--x:90%;--y:46%}.desk-scissors{--width:9%;--x:82%;--y:82%}
+ .desk-receipt{--x:72%;--y:80%}.desk-laptop{--width:min(20%,33svh);--x:46%}
+ #studio-title{font-size:12px;line-height:1.6}.desk-label{font-size:13px}
+ #studio-title>span{display:inline-block;max-width:200px}
+}
+@media(max-width:680px),(max-height:520px){
+ .desk-work-prompt{width:100%;white-space:normal;text-align:center;bottom:calc(100% + 2px)}
+}
+@media(prefers-reduced-motion:reduce){
+ .desk-work-arrow{animation:none!important}
+ body[data-entry=leaving] #studio-home[data-exit=work]{transition:none}
+ .paper-click{display:none}
+}

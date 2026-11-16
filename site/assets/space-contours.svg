@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 510 332" fill="none">
+  <defs>
+    <clipPath id="space-contour-boundary"><rect x="1" y="1" width="508" height="330" rx="31"/></clipPath>
+    <linearGradient id="space-contour-fade" x1="475" y1="15" x2="78" y2="282" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity=".17"/>
+      <stop offset=".54" stop-color="white" stop-opacity=".055"/>
+      <stop offset="1" stop-color="white" stop-opacity=".11"/>
+    </linearGradient>
+  </defs>
+  <!-- A hand-drawn family of folded contour paths, not a raster texture. -->
+  <g clip-path="url(#space-contour-boundary)" stroke="url(#space-contour-fade)" stroke-width=".8" stroke-linecap="round">
+    <path d="M330-32C337 19 360 41 412 52S490 71 536 118"/>
+    <path d="M288-29C295 30 320 63 379 77S482 91 535 145"/>
+    <path d="M245-25C249 46 280 86 344 101S470 113 536 174"/>
+    <path d="M199-22C203 59 237 110 307 127S457 135 534 204"/>
+    <path d="M150-18C157 77 191 135 266 153S444 161 532 235"/>
+    <path d="M98-13C111 96 146 161 222 179S428 187 527 267"/>
+    <path d="M45-8C62 112 99 185 176 205S413 215 522 301"/>
+    <path d="M-12-3C12 130 50 211 128 232S395 243 517 337"/>
+    <path d="M-59 23C-35 151 3 237 80 260S372 275 508 371"/>
+    <path d="M-64 106C-50 191-35 261 28 286S336 304 453 369"/>
+    <path d="M-34 233C-13 278 8 305 70 314S230 306 314 349"/>
+  </g>
+</svg>

@@ -1,0 +1,36 @@
+/* Read-only integrated acceptance checks. Run only after root gives GO. */
+const {chromium}=require('C:/Users/oblako/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules/playwright');
+const fs=require('fs'),path=require('path');const out=__dirname;
+const sameCamera=(a,b)=>a&&b&&['x','y','zoom'].every(k=>Math.abs(a[k]-b[k])<1e-7);
+const controls=['#return-control','.material-controls','#visit-control'];
+const boxes=page=>page.evaluate(selectors=>Object.fromEntries(selectors.map(selector=>{const e=document.querySelector(selector),r=e.getBoundingClientRect(),style=getComputedStyle(e);return[selector,{x:r.x,y:r.y,w:r.width,h:r.height,visible:r.width>0&&r.height>0&&style.visibility!=='hidden'&&style.display!=='none'}]})),controls);
+const stationary=(a,b)=>controls.every(key=>a[key].visible===b[key].visible&&['x','y','w','h'].every(k=>Math.abs(a[key][k]-b[key][k])<=1));
+const inside=(rect,width,height)=>!rect.visible||(rect.x>=-1&&rect.y>=-1&&rect.x+rect.w<=width+1&&rect.y+rect.h<=height+1);
+(async()=>{const browser=await chromium.launch({channel:'chrome',headless:true});const report={started:new Date().toISOString(),views:[]};
+for(const [width,height] of [[1440,900],[390,844],[320,568]]){
+ const context=await browser.newContext({viewport:{width,height},hasTouch:width<500,isMobile:width<500});const p=await context.newPage(),requests=[],errors=[],failedRequests=[];p.on('request',r=>requests.push(r.url()));p.on('pageerror',e=>{if(!errors.includes(e.message))errors.push(e.message)});p.on('response',r=>{if(r.status()>=400)failedRequests.push({status:r.status(),url:r.url()})});
+ const state=()=>p.evaluate(()=>portfolioRuntime),settled=async(key)=>{await p.waitForTimeout(100);await p.waitForFunction(key=>portfolioRuntime?.ready&&!portfolioRuntime.moving&&(key===undefined||portfolioRuntime.focusedKey===key),key,{timeout:20000});await p.waitForTimeout(150)};
+ const view={width,height,projects:[],errors,failedRequests};report.views.push(view);
+ try{
+  await p.goto('http://127.0.0.1:8943');await p.waitForFunction(()=>window.portfolioRuntime?.ready);await p.waitForTimeout(2300);
+  const metadata=await p.evaluate(()=>fetch('/portfolio-data.json').then(r=>r.json()));view.projectKeys=metadata.projects.filter(x=>x.portfolioCase).map(x=>x.key);
+  await p.mouse.move(width*.50,height*.61);await p.mouse.down();await p.mouse.move(width*.60,height*.57,{steps:10});await p.mouse.up();await settled();
+  for(const key of ['andra','btb','fkd','ora','bonanza']){
+   const entry={key};view.projects.push(entry);const before=await state();entry.beforeCamera=before.camera;
+   await p.locator('#work-toggle').click();await p.locator(`#work-list [data-key="${key}"]`).click();await settled(key);const opened=await state(),initialBoxes=await boxes(p);entry.opened=opened.focusedKey===key;entry.snapshotCamera=opened.returnCamera;entry.sampleBeforeOpenMatchesSnapshot=sameCamera(before.camera,opened.returnCamera);entry.materialCount=opened.materialCount;
+   const index=Math.min(2,opened.materialCount-1);await p.locator(`[data-material="${index}"]`).click();await p.waitForFunction(index=>portfolioRuntime.materialIndex===index,index);await p.waitForTimeout(700);const selected=await state(),selectedBoxes=await boxes(p);entry.selectedIndex=selected.materialIndex;entry.cameraStable=sameCamera(opened.camera,selected.camera);entry.controlsStable=stationary(initialBoxes,selectedBoxes);entry.controlsInside=Object.values(selectedBoxes).every(rect=>inside(rect,width,height));
+   await p.mouse.move(width*.5,height*.5);await p.mouse.wheel(0,420);await p.waitForTimeout(key==='andra'?4500:650);const wheeled=await state();entry.wheelStable=wheeled.focusedKey===key&&wheeled.materialIndex===index&&sameCamera(selected.camera,wheeled.camera);entry.noTimedAdvanceChecked=key==='andra';
+   if(key==='andra'||width===320&&key==='bonanza')await p.screenshot({path:path.join(out,`${width}x${height}-${key}.png`)});
+   await p.locator('#return-control').click();await settled(null);const returned=await state();entry.returnedCamera=returned.camera;entry.exactReturn=sameCamera(entry.snapshotCamera,returned.camera);entry.passed=entry.opened&&!!entry.snapshotCamera&&entry.selectedIndex===index&&entry.cameraStable&&entry.controlsStable&&entry.controlsInside&&entry.wheelStable&&entry.exactReturn;
+  }
+  const beforeAbout=await state();await p.locator('#about-control').click();await settled('despre');await p.waitForTimeout(500);const aboutState=await state(),aboutBoxes=await boxes(p);const aboutData=metadata.projects.find(x=>x.key==='despre');view.about={singleMaterial:aboutState.materialCount===1,images:aboutData.images,visibleMaterialControls:aboutBoxes['.material-controls'].visible,controlsInside:Object.values(aboutBoxes).every(rect=>inside(rect,width,height)),camera:aboutState.camera};
+  view.about.assetAccessibleText=await p.evaluate(async src=>{const response=await fetch(src);const xml=await response.text();const doc=new DOMParser().parseFromString(xml,'image/svg+xml');return[doc.querySelector('svg')?.getAttribute('aria-label'),doc.querySelector('title')?.textContent,doc.querySelector('desc')?.textContent].filter(Boolean).join(' | ')},aboutData.images[0]);
+  await p.screenshot({path:path.join(out,`${width}x${height}-about.png`)});
+  await p.evaluate(()=>{window.__qaMail=0;document.querySelector('#visit-control').addEventListener('click',e=>{e.preventDefault();window.__qaMail++;window.__qaMailHref=e.currentTarget.href},{once:true})});await p.locator('#visit-control').click();view.about.email=await p.evaluate(()=>({clicks:window.__qaMail,href:window.__qaMailHref,stillAbout:portfolioRuntime.focusedKey==='despre'}));
+  await p.locator('#return-control').click();await settled(null);view.about.exactReturn=sameCamera(beforeAbout.camera,(await state()).camera);view.about.passed=view.about.singleMaterial&&!view.about.visibleMaterialControls&&view.about.controlsInside&&view.about.email.clicks===1&&view.about.email.href==='mailto:andrusciac.dumitru@gmail.com'&&view.about.email.stillAbout&&view.about.exactReturn;
+ }catch(error){view.testFailure=error.stack;await p.screenshot({path:path.join(out,`${width}x${height}-failure.png`)}).catch(()=>{})}
+ view.heroRequests=[...new Set(requests.filter(url=>new URL(url).pathname.startsWith('/hero/')))];view.obsoleteRequests=view.heroRequests.filter(url=>/\/hero\/(?:objects\/|sigil[^/]*|personal-emblem\.)/i.test(url));view.passed=!view.testFailure&&view.projects.length===5&&view.projects.every(x=>x.passed)&&view.about?.passed&&errors.length===0&&failedRequests.length===0&&view.obsoleteRequests.length===0;
+ await context.close();fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify({width,height,passed:view.passed,projects:view.projects.map(({key,passed,controlsStable,controlsInside,wheelStable,exactReturn})=>({key,passed,controlsStable,controlsInside,wheelStable,exactReturn})),about:view.about,errors,failedRequests,obsoleteRequests:view.obsoleteRequests,testFailure:view.testFailure},null,2));
+}
+report.finished=new Date().toISOString();report.passed=report.views.every(view=>view.passed);fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));await browser.close();if(!report.passed)process.exitCode=1;
+})().catch(error=>{console.error(error);process.exitCode=1});

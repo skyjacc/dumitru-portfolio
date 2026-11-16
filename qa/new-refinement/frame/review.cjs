@@ -1,0 +1,42 @@
+const {chromium}=require('C:/Users/oblako/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules/playwright');
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const root=path.resolve(__dirname,'../../..'),phase=process.argv.includes('--before')?'before':'after';
+(async()=>{
+ const browser=await chromium.launch({channel:'chrome',headless:true}),report=[];
+ const check=(pass,label,detail)=>report.push({pass:!!pass,label,detail});
+ for(const [name,width,height] of [['desktop',1440,900],['mobile',390,844]]){
+  const page=await browser.newPage({viewport:{width,height},deviceScaleFactor:1});const errors=[];
+  page.on('pageerror',error=>errors.push(error.message));
+  await page.goto('http://127.0.0.1:8943/?frame-review='+phase,{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.portfolioEntry?.ready&&!document.querySelector('#studio-loader')&&document.querySelector('#studio-home').dataset.paperReveal==='done');
+  await page.waitForTimeout(750);
+  await page.locator('#work-toggle').click();
+  await page.waitForFunction(()=>document.body.dataset.entry==='leaving');
+  await page.waitForTimeout(200);
+  await page.screenshot({path:path.join(__dirname,`${phase}-${name}-entry.png`)});
+  await page.waitForFunction(()=>portfolioEntry.mode==='work'&&!portfolioEntry.pending&&!portfolioRuntime.moving);
+  await page.waitForTimeout(350);
+  await page.screenshot({path:path.join(__dirname,`${phase}-${name}-work.png`)});
+  const work=await page.evaluate(()=>({camera:portfolioRuntime.camera,focus:portfolioRuntime.focusedKey,overview:portfolioRuntime.workOverviewActive,mode:portfolioEntry.mode,canvas:[...document.querySelectorAll('canvas')].map(c=>({width:c.width,height:c.height})),projectCount:document.querySelectorAll('#work-list button[data-key]').length}));
+  check(work.mode==='work'&&work.overview&&!work.focus&&work.projectCount===5,name+' gallery opens',work);
+  await page.mouse.move(width/2,height*.45);await page.mouse.wheel(0,-100);await page.waitForTimeout(550);
+  const saved=await page.evaluate(()=>({...portfolioRuntime.camera}));
+  check(await page.evaluate(()=>portfolioEntry.mode==='work'&&!portfolioRuntime.focusedKey),name+' wheel retains gallery');
+  await page.locator('#work-toggle').click();await page.locator('#work-list [data-key=andra]').click();
+  await page.waitForFunction(()=>portfolioEntry.mode==='detail'&&portfolioRuntime.focusedKey==='andra'&&!portfolioEntry.pending&&!portfolioRuntime.moving);
+  await page.waitForTimeout(300);
+  await page.screenshot({path:path.join(__dirname,`${phase}-${name}-project.png`)});
+  await page.locator('#next-material').click();await page.waitForTimeout(400);
+  check(await page.locator('#return-control').isVisible(),name+' project and material controls remain');
+  await page.locator('#return-control').click();
+  await page.waitForFunction(()=>portfolioEntry.mode==='work'&&!portfolioRuntime.focusedKey&&!portfolioRuntime.moving);
+  const restored=await page.evaluate(()=>({...portfolioRuntime.camera}));
+  check(['x','y','zoom'].every(k=>Math.abs(restored[k]-saved[k])<.01),name+' exact saved camera restored',{saved,restored});
+  check(errors.length===0,name+' no JS errors',errors);await page.close();
+ }
+ await browser.close();
+ const files=['0e9h3p1htk-po.js','0n9xfy8bxft48.js'];
+ const hashes=Object.fromEntries(files.map(f=>[f,crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'site/_next/static/chunks',f))).digest('hex')]));
+ fs.writeFileSync(path.join(__dirname,phase+'-report.json'),JSON.stringify({phase,hashes,checks:report},null,2));
+ console.log(JSON.stringify({phase,checks:report.length,failures:report.filter(r=>!r.pass)},null,2));
+})().catch(error=>{console.error(error);process.exit(1)});

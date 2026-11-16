@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="760" viewBox="0 0 700 760" fill="none">
+<title>Dumitru — sculptural D</title>
+<defs><path id="letter" d="M108.5 0V114.5H285.25Q332.5 114.5 369.0 135.75Q405.5 157 426.375 203.75Q447.25 250.5 447.25 328Q447.25 383.75 436.125 424.75Q425 465.75 402.625 492.5Q380.25 519.25 346.0 532.375Q311.75 545.5 264.75 545.5H108.5V660H259.5Q374 660 446.625 621.0Q519.25 582 553.625 509.5Q588 437 588 336.25Q588 258.25 570.75 201.25Q553.5 144.25 523.125 105.25Q492.75 66.25 454.5 43.25Q416.25 20.25 373.5 10.125Q330.75 0 289 0ZM44.5 0V660H180.25V0Z"/><linearGradient id="face" x1="80" y1="660" x2="590" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#fcfcf5"/><stop offset=".42" stop-color="#efefe8"/><stop offset=".74" stop-color="#c9cbc4"/><stop offset="1" stop-color="#f0f0e9"/></linearGradient></defs>
+<g transform="translate(20 690) scale(1 -1)"><use href="#letter" transform="translate(24, -17.28)" fill="#555655"/>
+<use href="#letter" transform="translate(20, -14.40)" fill="#5b5c5a"/>
+<use href="#letter" transform="translate(16, -11.52)" fill="#646561"/>
+<use href="#letter" transform="translate(12, -8.64)" fill="#6e706a"/>
+<use href="#letter" transform="translate(8, -5.76)" fill="#7b7d75"/>
+<use href="#letter" transform="translate(4, -2.88)" fill="#93958d"/><use href="#letter" fill="url(#face)"/></g>
+</svg>

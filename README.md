@@ -1,0 +1,81 @@
+# Dumitru — spatial portfolio
+
+Private source/review snapshot. Start with [the handoff guide](docs/HANDOFF.md) for the architecture, character integration points and unfinished work.
+
+Live site: https://dumitru-spatial-portfolio.vercel.app/
+
+Run from the repository root with Python 3:
+
+```sh
+python scripts/serve.py
+```
+
+The served `site/` contains the required prebuilt native renderer as well as authored JavaScript, CSS and assets. The original upstream React/Next source was not supplied; this is not an npm-buildable source tree. Keep the `_next` files when sharing or running it. `studio-character-life.js` is an **unfinished, unconnected scheduler draft**. The proposed articulated rig has not been implemented. The live character is still in `studio-companion.js`.
+
+Local preview: http://127.0.0.1:8943/
+
+The current experience is **Loading → Home → Work → project**. Home introduces Dumitru through nine photographic paper objects: laptop, closed notebook/brush, phone, AirPods Max, pack, lighter, pen, a small process note, and scissors/film. The cable is removed. Scrolling changes between three compositions. Clicking the laptop or Work explicitly scatters the objects and enters the existing native gallery; notebook opens Process. The phone is decorative until About is selected in navigation. Home contains no case screenshots, client names or fixed project count; adding work does not require redesigning the introduction. Projects keep their native camera, manual material carousel and saved-camera return. Current release and verification: [DEPLOYMENT.md](DEPLOYMENT.md).
+
+One fixed header provides Home, Work, Process, About, Contact and EN/RO/RU. The Help/question-mark and duplicate contact corner controls are removed, including their native canvas renderers and shortcut. About zooms into the Home phone and displays a DOM profile with six real Instagram photographs. Process is an authored five-step DOM panel within the same desk: handwritten titles, all descriptions on desktop and an accordion on mobile. Earlier sigil props and the project-print Home are superseded.
+
+This is a separate adaptation of the supplied `ntch-mirror` runtime, retaining its renderer, world layout and camera animation. The supplied mirror and earlier `portfolio-lab` remain untouched. [scripts/ENTRY.md](scripts/ENTRY.md) is the current entry-flow and reapply guide; [IDEAS.md](IDEAS.md) records the broader design history.
+
+## Content
+
+Five independent concepts: ANDRA, BTB Mobilă, FKD Auto Service, ORA LENTĂ (fictional brand), Bonanza. Legacy `despre` and `process` remain the sixth and seventh catalogue objects, not client projects; the active About/Process interfaces are outside the native renderer. Contact: andrusciac.dumitru@gmail.com.
+
+`site/portfolio-data.json` records content and original material sources. Home uses seven retained v2 cutouts and two new v3 assets: closed notebook/brush and scissors/film, generated with built-in Imagegen. Reference screenshots are not served as portfolio artwork. Source files and prompt provenance are in `scripts/PAPER-HOME.md` and `qa/home-composition/assets/`. Mobile previews show a phone viewport; full original screenshots remain in `site/assets/projects/`.
+
+## Interaction
+
+- Home and Work are distinct states. Home wheel/touch and PageUp/PageDown only cycle its three compositions. Laptop/Work explicitly starts a 900ms scatter into the native Work gallery. Return restores the saved interpolated Home arrangement over 700ms. Reduced motion removes these flight durations. The Work pill then provides the project index.
+- Work places the first five projects around an open centre: one above and two mirrored pairs beside/below it. Further projects enter larger rings without moving earlier pins. Portrait overview previews are enlarged independently of the focused material, and all initial cases remain visible. The pencil character can be dragged by mouse/touch, moved with arrow keys, or selected and placed with a second click. Its saved position belongs to the world; dragging it does not pan the camera. On project opening it walks to a safe viewing spot, takes notes after material changes, then rests. Back returns it to the saved Work spot. About and Process remain outside the project field.
+- The outer rounded display frame is disabled in every state, including Detail and Process handoffs. The viewport owns one #080808 background; scene opacity fades over 650ms and Process has a guarded exit fade. Work → Process → Work keeps the saved camera. Individual image masks remain intact.
+- Work wheel/drag/pinch changes the camera only, without magnetic object selection or returning to Home. The old central Home hitbox and implicit Home commit path are removed. Home requires its explicit header control or keyboard action.
+- Projects open through the native camera flight. Paper photo thumbnails replace the numbered bottom strip; a paper View site link includes the compact concept/fictional-brand note. The shared upper Back is the only visible return control. Material selection is manual; wheel does not advance materials or unexpectedly close a focused project. Return restores the saved camera, including existing interruption/history protections.
+- Material arrows sit at the viewport sides while thumbnails remain below. Arrows, swipes and thumbnail numbers share sequential order. The Work character follows the rendered board camera in the same frame, with proportional scale and no screen-edge clamp. Latest fix evidence: `qa/board-follow/`.
+- About is part of Home: navigation enlarges and moves only the existing paper phone, leaving other props in place, and reveals accessible HTML inside its screen. Six existing local photos open manually with previous/next and profile return; Escape from a photo returns to profile. Work → About restores Home before approaching the phone; About → Work retreats before scattering into the gallery. Normal navigation uses this DOM view; native About remains legacy route/assets. Process opens a central panel after 650ms and uses shared top Back. Perimeter props retain about 15% of their rotated bounding-box dimension on mobile and 20% on larger screens. This is not a live Instagram feed or Stories.
+- Native hover is stable: random comic jitter, continuous pointer tilt/parallax and hover growth/fanning are disabled. Camera navigation and manual material changes remain functional.
+- Unloaded rear cards retain their original noise texture. Hover changes wake the existing effect; it freezes after idle and stays static with reduced motion. Loading an image replaces the placeholder. This does not re-enable card jitter or parallax.
+- The neutral black field retains spatial depth without scanlines, noise, RGB splitting or CRT curvature. Home/navigation/Process use local DM Sans (`StudioSans`) with Caveat (`StudioHand`) accents and existing Manrope fallback. Native captions keep Manrope; original project screenshots retain their own typography. Desk props remain steady. Navigation deliberately uses the reference hammer/letter hover and morphing shared Back, plus brief press/release and paper click feedback. Pupils follow the pointer within bounded outlines, returning to neutral on leave/blur; they no longer reproduce the reference's escaping trajectory. Touch and reduced motion keep eyes neutral; reduced motion disables the other animations.
+- Resizing during a phone or scatter flight preserves the current visible pose, recalculates the destination and continues the unused part of the fourth-power easing curve. It no longer completes the flight abruptly or restarts an ease-in. About retreat restores the other props while the phone shrinks.
+- The standalone React mount uses the supplied module loader without booting the original Next document or analytics. Original SSR biography and project metadata are not served.
+
+## Run
+
+```powershell
+python scripts/serve.py
+```
+
+The server binds only to `127.0.0.1:8943` and serves the shell for `/work/*` routes. The Vercel project is `dumitru-spatial-portfolio`; publication details are in [DEPLOYMENT.md](DEPLOYMENT.md). Only `site/` is published. Adapters, research and QA stay local, and `site/.vercelignore` excludes unused experiments and authoring assets.
+
+## Languages
+
+English is the default. A language nav pill matches Work/Process/About and opens English / Română / Русский in that order. The visitor’s selection persists locally. Entry, navigation, About, Process, project captions and document metadata are localized; project screenshots retain their original language. Motion mini 14.14.0 (vendored, MIT) rolls whole short text labels vertically, replacing the rejected split-flap glyph fragments. The actual semantic text updates immediately; decorative copies are inert and aria-hidden, and cleanup restores the original content nodes. Rapid switches, navigation, resize, scroll and reduced motion cancel the effect. Native Popover/Invoker controls have a bundled invoker fallback and a manual older-browser fallback. Local Caveat includes Cyrillic; Manrope covers Cyrillic body text.
+
+## Editing and provenance
+
+The source is an exported compiled runtime. Bounded adapters in `scripts/` record native changes; edit existing working bundles through those adapters rather than restoring the supplied originals. Project source data currently comes from `../portfolio-lab/projects.js`.
+
+`site/entry-flow.js` and `site/entry-flow.css` own the authored shell and transitions. `studio-composition.js` owns Home transforms/input and saved arrangements; `studio-home.css` its current layout; `studio-process.js`/`.css` the standalone Process panel; `studio-about.js`/`.css` the phone's DOM screen; `studio-nav.js`/`.css` illustrated navigation and shared Back; `studio-language.js`/`.css` the language nav pill and whole-label rolling text; `studio-clicks.js` press/click feedback; and `studio-fonts.css` the local font faces. `adapt-entry-shell.cjs` installs these hooks. `adapt-behavior.cjs` owns the native overview bridge, labels, filtering and return behavior. `adapt-studio-render.cjs --hover-only` reapplies calm native hover. `adapt-entry-home.cjs` must run **after any older Home adapter**: it installs the current marker and removes active workbench prop preload paths. `adapt-unframed-work.cjs` reapplies the bounded outer-frame bypass after native module changes; `--check` validates its anchors and syntax. See [scripts/ENTRY.md](scripts/ENTRY.md) for the reapply order and public APIs.
+
+Legacy native phone assets are generated by `make-phone-assets.py`; native Process assets by `make-process-assets.cjs`. Their earlier controller, source photographs and integration are documented in [scripts/SURFACES.md](scripts/SURFACES.md). Active copy now lives in `studio-about.js` and `studio-process.js`. The phone reuses `site/assets/about/instagram/` photos without generation. SURFACES' older Home ordering note and [scripts/WORKBENCH.md](scripts/WORKBENCH.md) describe the superseded workbench; use ENTRY.md for the current Home.
+
+The Kernjosh Loading/Home/Work reference was inspected read-only at `C:/Users/oblako/Desktop/ячс/site_recon/webdesign.kernjosh.com/`. Desk props are original generated assets; the exact navigation illustrations were subsequently reused at the user's request and are attributed in `site/assets/nav-reference/SOURCE.md`. Current reference/source anchors are in `qa/home-composition/reference/`, with earlier observations in [qa/new-entry/reference-notes.md](qa/new-entry/reference-notes.md). The portfolio preserves the supplied interaction engine for validation; it does not claim its author’s engine or work as Dumitru’s own.
+
+## Verification
+
+- Interactive character and open-centre rings: `qa/interactive-companion/`. Covers spacing and projected bounds, pointer/keyboard movement, finite pose animations, project/material reactions, saved position/camera return and small-screen placement. Earlier inert-character and diamond-layout expectations are superseded.
+- Work field, transitions and paper project controls: `qa/work-redesign/README.md`. Uniform all-state outer framing, guarded Work/Process handoffs, stable diamond growth, three finite companion poses, manual paper thumbnails and portrait caption/footer separation. Final material checks cover all five cases and short/narrow phone viewports; public-release evidence is recorded alongside the report.
+- Project media clarity: `qa/project-clarity/README.md`. All 20 materials checked in mobile Chromium/WebKit; five mobile previews recaptured at DPR 3, FKD desktop/request/summary at DPR 2 without baked browser rails. Logical card sizes remain independent of image density. Whole-page screenshots still contain small text in fit mode; View site opens the full website.
+- About text clarity: `qa/about-clarity/README.md`. The phone's screen lays out at its final displayed resolution, uses rem font limits and normal-scale scrollbars. Desktop/mobile/landscape, EN/RO/RU and enlarged-text WebKit checks cover profile/photos, scrolling and return. About copy no longer mentions AI.
+- Latest eyes and Process correction: `qa/nav-correction/README.md`. Continuous pointer motion now updates pupils while the cursor moves; the Process panel has the reference's shared moving circle, row stagger, content drift and animated mobile accordion. The earlier nav rotation checks did not cover that missing panel animation.
+- Latest navigation correction and publication checks: `qa/nav-release/`. Includes exact reference Process hover, individually clipped original pupils, restored original Loading artwork, Motion rolling text, the language nav pill and assembled desktop/mobile checks. Earlier split-flap and combined-pupil captures in `qa/new-refinement/` describe superseded UI; its camera/resize and Work-frame evidence remains relevant.
+- Current composition reference, asset provenance, font sources and focused motion/Process checks: `qa/home-composition/`. The Process component has 80 passing checks across four viewport sizes and EN/RO/RU, including real font loading; these are scoped component checks, not physical-device certification. The initial motion captures precede the cable removal and About zoom. Changes remain local.
+- Earlier loading, motion and responsive audit: [qa/modern-guidance-audit/README.md](qa/modern-guidance-audit/README.md). Includes cold mobile loading measurements, responsive lossless assets, the previous nine-object Home, project/surface materials, return/focus checks and safe-area/touch verification.
+- Current scroll regression: `qa/work-gesture-regression/`; actual reproduction and varied wheel bursts, drag/pinch, retained zoom, explicit opening/return and no implicit Home. Updated overview checks preserve free zoom; Home checks verify the central native hit target is absent and explicit Home remains functional.
+- Earlier Home: `qa/paper-home/report.json`, 21 size/language combinations. Header cleanup: `qa/new-entry/ui-cleanup/report.json`, 37 checks including visual removal of native corner sprites.
+- Quiet native hover: **24 passing captures / 10,954 forced draw frames** in `qa/calm-hover-review/`. Stationary and moving mouse input at 1440×900 and 390×844, normal and reduced motion, produced zero within-capture ranges in recorded plane, camera and sticker geometry. Help opened/closed in all four runs; no page errors occurred. These forced frames demonstrate stability, not performance, and mobile hover is synthetic mouse input rather than physical-touch certification.
+- Surface integration evidence is in `qa/surface-native-review/`; earlier opening/closing, interruption, typography and Info-close regressions remain in `qa/open-close-review/`, `qa/typography/` and `qa/info-close-bug/`. Older sigil, simple-Home and workbench reports describe historical visuals, not the active Home.
+
+See [scripts/ENTRY.md](scripts/ENTRY.md) for implementation boundaries, QA commands and loader limitations.
