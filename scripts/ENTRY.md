@@ -2,6 +2,12 @@
 
 Current character scope: `studio-companion.js` owns only `work` and `detail`. CSS immediately hides the SVG/fixtures in all other sections and the controller stops clocks/input there. Home/Loading retain their original walker. Earlier About/Process resident-placement notes below are superseded by this user override.
 
+## Shared About / Contact phone
+
+`portfolioEntry.open('despre')` and `.open('contact')` share the `about` spatial state. `body.dataset.phoneView` identifies the profile/contact selection for header highlighting and title. From Work/Process the desk restores first, then the same phone approaches; switching the two views while enlarged only changes the HTML screen. Repeating the selected header button closes the phone. `studio-about.js` owns profile, manually selected photos and Contact, including inner Back/Escape and photo swipe. Its `portfolio:phoneview` event updates the outer navigation; `show({view,onBack})`, `setView(view)` and `back()` preserve the boundary between inner navigation and the desk camera.
+
+The phone uses real local photos and confirmed biography only, with no fake social counters or verification badge. Contact provides actual email/Instagram links and copy-email, without a fictitious send-success flow. The existing counter-scaled DOM screen and short-landscape layout remain required for readable text. New phone UI and labels support English, Romanian and Russian.
+
 This guide describes the active entry implemented in `site/entry-flow.js`, `site/entry-flow.css` and the authored `studio-*` modules. It supersedes the Home instructions in `WORKBENCH.md` and the older workbench reapply note in `SURFACES.md`. The earlier sigil and Y2K props are inactive. Home now uses a nine-object paper desk with three scroll compositions; see `PAPER-HOME.md` for current art and motion. Current publication is recorded in `../DEPLOYMENT.md`.
 
 All paths below are relative to the `portfolio-ntch` root unless stated otherwise. The supplied mirror and `site_recon` are reference sources, not edit targets.

@@ -16,7 +16,7 @@
       <button id="work-toggle" type="button" class="nav-pill">${icon('work')}<span data-copy="ui.work">${t('ui.work')}</span></button>
       <button id="process-control" type="button" class="nav-pill" data-key="process" aria-expanded="false" aria-controls="studio-process">${icon('process')}<span data-copy="ui.process">${t('ui.process')}</span></button>
       <button id="about-control" type="button" class="nav-pill" data-key="despre" aria-expanded="false" aria-controls="studio-about">${icon('about')}<span data-copy="ui.about">${t('ui.about')}</span></button>
-      <a id="nav-contact" class="nav-pill" href="mailto:andrusciac.dumitru@gmail.com">${icon('contact')}<span data-copy="ui.contact">${t('ui.contact')}</span></a>
+      <button id="nav-contact" type="button" class="nav-pill" data-key="contact" aria-expanded="false" aria-controls="studio-about">${icon('contact')}<span data-copy="ui.contact">${t('ui.contact')}</span></button>
     </nav>
     <nav id="language-control" aria-label="${t('ui.languages')}"><button id="language-toggle" class="nav-pill" type="button" commandfor="language-options" command="toggle-popover" aria-controls="language-options" aria-expanded="false" aria-label="${t('ui.languages')}"><svg class="language-globe" viewBox="0 0 28 28" aria-hidden="true"><path d="M25 13.3C25.4 20.4 20.2 25.4 13.3 25S2.4 20.2 3 13.6 8 2.8 14.8 3 24.3 6.7 25 13.3ZM4 11.3q10.5 4 20.5.6M4.8 18.6q9.6-3.2 19 .5M14.8 3q-9 11.6-1.5 22M14.8 3q9 12.6-1.5 22"/></svg><span data-language-current>${i18n.locale.toUpperCase()}</span><svg class="language-chevron" viewBox="0 0 12 12" aria-hidden="true"><path d="m2 4 4 4 4-4"/></svg></button><div id="language-options" popover="auto" data-language-popover role="group" aria-label="${t('ui.languages')}">${[['en','English'],['ro','Română'],['ru','Русский']].map(([lang,label])=>`<button type="button" data-locale="${lang}" lang="${lang}" aria-pressed="${lang===i18n.locale}"><span>${label}</span><span class="language-choice-code" aria-hidden="true">${lang.toUpperCase()}</span></button>`).join('')}</div></nav>
     <div id="project-controls" hidden>
@@ -111,7 +111,7 @@
       if(intent==='work'||!intent&&entry.mode==='work'&&!window.portfolioRuntime?.focusedKey){entry.showHome();return;}
       if(!entry.pending)entry.enterWork();
     };
-    ui.querySelectorAll('[data-key]').forEach(button=>button.onclick=event=>{const key=button.dataset.key;if(key==='process'||key==='despre'||window.portfolioRuntime?.focusedKey!==key){rememberOpener(button.classList.contains('nav-pill')?button:workToggle,key,event);if(window.portfolioEntry)portfolioEntry.open(key);else navigate({key})}});
+    ui.querySelectorAll('[data-key]').forEach(button=>button.onclick=event=>{const key=button.dataset.key;if(key==='process'||key==='despre'||key==='contact'||window.portfolioRuntime?.focusedKey!==key){rememberOpener(button.classList.contains('nav-pill')?button:workToggle,key,event);if(window.portfolioEntry)portfolioEntry.open(key);else if(key==='contact')location.href='mailto:andrusciac.dumitru@gmail.com';else navigate({key})}});
     ui.querySelector('#return-control').onclick=requestReturn;
     const changeMaterial=step=>{const key=window.portfolioRuntime?.focusedKey;if(window.portfolioSurfaces?.count(key))surface({key,step});else navigate({action:'material',step})};
     ui.querySelector('#previous-material').onclick=()=>changeMaterial(-1);
@@ -147,11 +147,12 @@
       const surfaceCount=window.portfolioSurfaces?.count(project?.key)||0;
       const index=surfaceCount?window.portfolioSurfaces.getIndex(project.key):state.materialIndex;
       const intended=document.body.dataset.entryTarget;
-      const signature=[i18n.locale,state.focusedKey,returning,index,surfaceCount,state.materialCount,state.helpOpen,!!state.moving,window.portfolioEntry?.mode,intended].join('|');
+      const contactView=document.body.dataset.phoneView==='contact';
+      const signature=[i18n.locale,state.focusedKey,returning,index,surfaceCount,state.materialCount,state.helpOpen,!!state.moving,window.portfolioEntry?.mode,intended,contactView].join('|');
       if(signature===previous)return;
       previous=signature;
       updateCopy();
-      document.title=customSurface?t(customAbout?'ui.about':'ui.process')+' | Dumitru':project?project.name+' | Dumitru':t('site.title');
+      document.title=customSurface?t(customAbout?(contactView?'ui.contact':'ui.about'):'ui.process')+' | Dumitru':project?project.name+' | Dumitru':t('site.title');
       document.body.dataset.focus=project?'project':'space';
       document.body.dataset.project=project?.key||'';
       document.body.dataset.materialCount=project?String(project.images.length):'0';
@@ -162,12 +163,15 @@
       // Share discrete native changes with the character; it needs no idle poller.
       dispatchEvent(new CustomEvent('portfolio:projectstate',{detail:{key:focusedProject?.key||null,materialIndex:index,moving:!!state.moving,mode:window.portfolioEntry?.mode||'work'}}));
       const processActive=intended==='process'||!intended&&(customProcess||project?.key==='process');
-      const aboutActive=intended==='about'||!intended&&(customAbout||project?.key==='despre');
+      const phoneActive=intended==='about'||!intended&&(customAbout||project?.key==='despre');
+      const aboutActive=phoneActive&&!contactView,contactActive=phoneActive&&contactView;
       ui.querySelector('#process-control').setAttribute('aria-current',processActive?'page':'false');
       ui.querySelector('#process-control').setAttribute('aria-expanded',String(!!processActive));
       workToggle.setAttribute('aria-current',intended==='work'||!intended&&(window.portfolioEntry?.mode==='work'||project?.portfolioCase)?'page':'false');
       ui.querySelector('#about-control').setAttribute('aria-current',aboutActive?'page':'false');
       ui.querySelector('#about-control').setAttribute('aria-expanded',String(!!aboutActive));
+      ui.querySelector('#nav-contact').setAttribute('aria-current',contactActive?'page':'false');
+      ui.querySelector('#nav-contact').setAttribute('aria-expanded',String(!!contactActive));
       // The phone/process owns focus now. A pending return from an earlier
       // project must not steal focus after that section's Back completes.
       if(customSurface){wasFocused=false;pendingReturnFocus=null;return;}

@@ -30,12 +30,12 @@ There is currently **no package.json, npm install step, or npm build**. The orig
 
 - Loading → Home: paper objects around the introduction; scrolling changes the composition. The laptop/Work control explicitly enters the project field.
 - Work: five independent portfolio concepts with pan/zoom, manual project opening and material selection. Back restores the previous camera. New project placement uses expanding rings.
-- About: the same Home phone approaches the camera and reveals HTML text and photos inside its screen. Process is a separate HTML panel in the desk composition.
+- About and Contact: the same Home phone approaches the camera and reveals HTML profile, photo and contact views. Switching About/Contact keeps the phone stationary; inner Back returns to the profile, while profile Back/global Back/blank-space dismissal returns Home. Process is a separate HTML panel in the desk composition.
 - About closes to Home through Back on a complete blank-space tap outside the phone. Phone/photo gestures, navigation controls and drags are excluded. Work has no dropdown: it toggles Home/Work, and returns an open project to its saved gallery camera.
-- English is the default, followed by Romanian and Russian. Contact opens a mail client; there is no contact submission backend.
-- Loading and Home preserve the original raster walker and Home controls. `character-runtime.js` self-activates on Home and suspends elsewhere; normal navigation does not retire it. The articulated resident owns Work/About/Process and observes Detail decoratively; it is stopped, hidden and noninteractive on Home. Its Work position belongs to the board, with safe section anchors elsewhere. Detail has no tab stop or pointer interception. The user's latest clarification removes the public pause button and persisted pause preference; developer pause and reduced motion remain.
+- English is the default, followed by Romanian and Russian. Contact opens the phone's contact view; actual email and Instagram links and email-copy are inside it. There is no contact submission backend.
+- Loading and Home preserve the original raster walker and Home controls. `character-runtime.js` self-activates on Home and suspends elsewhere; normal navigation does not retire it. The articulated resident owns Work and observes Detail decoratively; it is stopped, hidden and noninteractive on Home, About, Contact and Process. Its Work position belongs to the board. Detail has no tab stop or pointer interception. The user's latest clarification removes the public pause button and persisted pause preference; developer pause and reduced motion remain.
 - The local rig has 32 drawing actions and the scheduler has 27 activities/reactions with preparation, performance, finish and rest. Scene availability still depends on section, space and preferences. The latest visual direction follows the original left-hand reference: irregular tilted head, bowed single-line limbs and muted graphite rather than bright beige geometry.
-- The latest motion correction adds prone pushup preparation/exit, a clearer coffee grip, a two-handed horizontal ruler and subtle mouse head tracking in quiet poses. The resident yields during phone/Process motion and revalidates content clearance afterward. Current evidence and limits: [interaction corrections](../qa/resident/INTERACTION-CORRECTIONS.md).
+- The latest motion correction adds prone pushup preparation/exit, a clearer coffee grip, a two-handed horizontal ruler and subtle mouse head tracking in quiet poses. The resident stays inactive throughout the phone/Process scenes and revalidates content clearance when returning to Work. Current evidence and limits: [interaction corrections](../qa/resident/INTERACTION-CORRECTIONS.md).
 
 ## Code map
 
@@ -87,7 +87,7 @@ Six-pose proof, full action silhouettes and numerical geometry/prop checks are i
 
 Implementation and review boundaries:
 
-1. Rig, life and coordinator are implemented and connected locally. About text/biography is unchanged; Contact remains immediate `mailto` without fictitious send-success behavior.
+1. Rig, life and coordinator are implemented and connected locally. The phone profile uses confirmed biography/photos; Contact has its own inner screen with real email/Instagram links and no fictitious send-success behavior.
 2. Work projection retains saved world position/size and uses the camera actually rendered. Parent/child coordinate transforms and Back restoration need their current integration evidence, not only older board-follow results.
 3. Direct input, soft exits, navigation invalidation and token-owned cleanup are implemented. Review both held props and independently anchored furniture under interruption.
 4. Native cards still share a canvas: the coordinator builds a geometric inverse mask rather than relying on DOM z-index alone. Check actual rounded contours during movement and resize.

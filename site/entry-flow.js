@@ -68,6 +68,9 @@
  const loader=document.getElementById('studio-loader');
  let mode=pathIsDetail?'work':'home',origin='work',generation=0,booted=false,pending=false,hadDetail=false,scheduledHome=false,overviewVisited=false;
  let processReturnMode='home',processOpener=null,processChangedURL=false;
+ let phoneView='profile',phoneOpener=null;
+ const selectPhoneView=view=>{phoneView=view==='contact'?'contact':'profile';document.body.dataset.phoneView=phoneView;};
+ addEventListener('portfolio:phoneview',event=>selectPhoneView(event.detail?.view));
  const composition=()=>window.portfolioComposition;
  const announceTarget=target=>{document.body.dataset.entryTarget=target;dispatchEvent(new CustomEvent('portfolio:entryintent',{detail:{target}}))};
  const announceSettled=()=>dispatchEvent(new CustomEvent('portfolio:entrysettled',{detail:{mode}}));
@@ -156,8 +159,9 @@
   if(processChangedURL){processChangedURL=false;nav({key:'home'});}
   requestAnimationFrame(()=>{if(processOpener?.isConnected&&!processOpener.closest('[inert]'))processOpener.focus({preventScroll:true})});
  }
- async function openAbout(){
+ async function openAbout(view='profile'){
   if(!booted||pending||mode==='about')return;
+  selectPhoneView(view);phoneOpener=document.activeElement;
   const from=mode,token=++generation;pending=true;origin='home';hadDetail=false;
   announceTarget('about');
   // The small Home source must not be stretched across the enlarged phone.
@@ -171,7 +175,7 @@
   delete root.dataset.exit;delete root.dataset.retreat;setMode('about',false);announceTarget('about');
   await Promise.all([
    composition()?.focusPhone({duration:reduced()?0:850}),
-   pause(467).then(()=>{if(token===generation)window.portfolioAbout?.show({onBack:closeAbout})})
+   pause(467).then(()=>{if(token===generation)return window.portfolioAbout?.show({view:phoneView,onBack:closeAbout})})
   ]);
   if(token!==generation)return;
   pending=false;delete document.body.dataset.entryTarget;announceSettled();
@@ -182,18 +186,25 @@
   announceTarget('home');
   await retreatPhone(token);if(token!==generation)return;
   pending=false;setMode('home',false);root.dataset.paperReveal='done';
-  document.getElementById('about-control')?.focus({preventScroll:true});
+  (phoneOpener?.isConnected&&!phoneOpener.closest('[inert]')?phoneOpener:document.getElementById('about-control'))?.focus({preventScroll:true});
  }
  async function open(key){
-  if(key==='process'||key==='despre'){
+  if(key==='process'||key==='despre'||key==='contact'){
    if(!booted)return;
-   const target=key==='despre'?'about':'process',intent=document.body.dataset.entryTarget;
+   const target=key==='process'?'process':'about',view=key==='contact'?'contact':'profile',intent=document.body.dataset.entryTarget;
    // The active section is a toggle, including its approach animation. A
    // second press while retreating must not start a new approach underneath it.
    if(pending&&intent==='home')return;
+   // Profile and Contact share one already enlarged phone. Switching them
+   // changes only the screen; it must not start another camera/desk flight.
+   if(target==='about'&&(mode==='about'||intent==='about')&&phoneView!==view){
+    selectPhoneView(view);phoneOpener=document.activeElement;
+    if(window.portfolioAbout?.getState().visible)void window.portfolioAbout.setView(view);
+    return;
+   }
    if(intent===target||!intent&&mode===target){showHome();return;}
    if(pending)return;
-   if(target==='process')void openProcess();else void openAbout();
+   if(target==='process')void openProcess();else void openAbout(view);
    return;
   }
   if(!booted||pending)return;
@@ -265,7 +276,7 @@
  addEventListener('portfolio:entrystate',event=>{if(event.detail.mode==='home')revealDesk()});
  // Home wheel/touch belongs to the cyclic composition controller. Work is explicit.
  document.addEventListener('wheel',e=>{if(pending){e.preventDefault();e.stopImmediatePropagation()}},{passive:false,capture:true});
- document.addEventListener('keydown',e=>{if(['process','about'].includes(mode)&&e.key==='Escape'){if(mode==='about'&&window.portfolioAbout?.getState()?.photo>=0)return;e.preventDefault();e.stopImmediatePropagation();back()}},true);
+ document.addEventListener('keydown',e=>{if(['process','about'].includes(mode)&&e.key==='Escape'){if(mode==='about'&&['photo','contact'].includes(window.portfolioAbout?.getState()?.view))return;e.preventDefault();e.stopImmediatePropagation();back()}},true);
  document.addEventListener('keydown',e=>{if((e.key==='Home'||(e.key==='Escape'&&mode==='work'&&!window.portfolioRuntime?.focusedKey&&!window.portfolioRuntime?.helpOpen))&&!e.ctrlKey&&!e.metaKey){e.preventDefault();e.stopImmediatePropagation();showHome()}},true);
  setInterval(()=>{
   if(!booted||pending||mode==='process'||mode==='about')return;
