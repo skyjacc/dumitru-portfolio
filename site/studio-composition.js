@@ -106,10 +106,11 @@
     phone.el.dataset.aboutOrientation=landscape?'landscape':'portrait';
     // Lay out About at its displayed resolution; the screen cancels this scale.
     phone.el.style.setProperty('--about-focus-scale',String(scale));
-    phone.el.style.setProperty('--about-screen-radius',`${phone.width*.085*scale}px`);
+    phone.el.style.setProperty('--about-screen-radius',`${phone.width*.106*scale}px`);
+    phone.el.style.setProperty('--about-safe-top',`${phone.height*.058*scale}px`);
     if(landscape){
-      phone.el.style.setProperty('--about-screen-long',`${phone.height*.904}px`);
-      phone.el.style.setProperty('--about-screen-short',`${phone.width*.819}px`);
+      phone.el.style.setProperty('--about-screen-long',`${phone.height*.93610}px`);
+      phone.el.style.setProperty('--about-screen-short',`${phone.width*.87789}px`);
     }
     const x=innerWidth/2-geometry.viewportX,y=(geometry.headerBottom+geometry.safeBottom)/2-geometry.viewportY;
     return poses.map((pose,i)=>i===index?{x,y,angle:landscape?90:0,scale}:pose);

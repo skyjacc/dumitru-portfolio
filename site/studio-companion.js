@@ -21,7 +21,7 @@
  let navigationIntent=null,compositionMoving=false,sceneTarget=null,debug=false,debugReduced=false,randomSeed=null;
  let detailTimer=0,detailSignature='';
  const finePointer=matchMedia('(hover: hover) and (pointer: fine)');
- let gazePointer=null,gazeTarget={x:0,y:0},gazeTime=0;
+ let gazePointer=null,gazeTarget={x:0,y:0},gazeTime=0,gazeRelease=null,gazeSettleTimer=0;
  // The removed public pause control no longer persists a preference. Debug pause is session-only.
  const geometry=()=>window.portfolioWorkGeometry?.(),runtime=()=>window.portfolioRuntime,effectiveReduced=()=>reduced.matches||debugReduced;
  const nativeMoving=()=>['work','detail'].includes(mode)&&!!runtime()?.moving;
@@ -29,9 +29,13 @@
  const interactive=()=>ready&&ownsScene()&&!hiddenReason&&!cardBlocked()&&mode!=='detail';
  const busy=()=>!ready||!!window.portfolioEntry?.pending||nativeMoving()||compositionMoving||!!navigationIntent||!!travel&&!travel.signal;
  const canLook=()=>ready&&ownsScene()&&current&&!hiddenReason&&!cardBlocked()&&!document.hidden&&finePointer.matches&&!effectiveReduced()&&!paused&&!externalPause&&!drag&&!selected&&!travel&&!localMotion&&!busy()&&['idle','look','inspect'].includes(lastPose.action);
+ // Authored gestures can start immediately while the previous gaze eases out.
+ // Pause freezes the last drawn gaze rather than snapping the head to neutral.
+ const canAdvanceLook=()=>ready&&ownsScene()&&current&&!hiddenReason&&!cardBlocked()&&!document.hidden&&finePointer.matches&&!effectiveReduced()&&!paused&&!externalPause&&!drag;
  const lookMoving=()=>Math.hypot(gazeTarget.x-look.x,gazeTarget.y-look.y)>.001;
- function resetLook(){gazePointer=null;gazeTarget={x:0,y:0};look={x:0,y:0};gazeTime=0;}
+ function resetLook(){gazePointer=null;gazeTarget={x:0,y:0};look={x:0,y:0};gazeTime=0;gazeRelease=null;clearTimeout(gazeSettleTimer);gazeSettleTimer=0;}
  function updateLookTarget(){
+  if(paused||externalPause)return;
   if(!canLook()){gazeTarget={x:0,y:0};return;}
   if(!gazePointer){gazeTarget={x:0,y:0};return;}
   const h=rig.metrics()?.head||{x:60,y:42},s=current.scale;
@@ -41,12 +45,20 @@
  }
  function advanceLook(now){
   updateLookTarget();
-  if(!canLook()){const changed=!!(look.x||look.y);look={x:0,y:0};gazeTime=0;return changed;}
+  if(!canAdvanceLook()){gazeTime=0;return false;}
   if(!lookMoving()){gazeTime=0;return false;}
-  const dt=gazeTime?Math.min(40,now-gazeTime):16,alpha=1-Math.exp(-dt/105);gazeTime=now;
-  look={x:look.x+(gazeTarget.x-look.x)*alpha,y:look.y+(gazeTarget.y-look.y)*alpha};
-  if(!lookMoving()){look={...gazeTarget};gazeTime=0;}return true;
+  const dt=gazeTime?Math.min(40,now-gazeTime):16;gazeTime=now;
+  if(!canLook()){
+   gazeRelease??={from:{...look},elapsed:0};gazeRelease.elapsed+=dt;
+   const p=clamp(gazeRelease.elapsed/200,0,1),e=p*p*p*(p*(p*6-15)+10);
+   look={x:gazeRelease.from.x*(1-e),y:gazeRelease.from.y*(1-e)};
+  }else{
+   gazeRelease=null;const alpha=1-Math.exp(-dt/105);
+   look={x:look.x+(gazeTarget.x-look.x)*alpha,y:look.y+(gazeTarget.y-look.y)*alpha};
+  }
+  if(!lookMoving()){look={...gazeTarget};gazeTime=0;gazeRelease=null;}return true;
  }
+ function refreshLook(){gazeTime=0;updateLookTarget();if(canAdvanceLook()&&lookMoving())wake();else if(!travel&&!localMotion){cancelAnimationFrame(frame);frame=0;}}
  function context(){return{mode,project:latestKey,materialIndex:latestMaterial,reduced:effectiveReduced(),visible:ready&&!document.hidden&&ownsScene(),paused:paused||externalPause||selected,dragging:!!drag||!!localMotion,inputBusy:busy()};}
  function random(){if(randomSeed===null)return Math.random();randomSeed=(Math.imul(randomSeed,1664525)+1013904223)>>>0;return randomSeed/4294967296;}
  function localize(){button.setAttribute('aria-label',copy().name);help.textContent=copy().name;}
@@ -131,7 +143,7 @@
  }
  function pose(input){
   lastPose={...input};button.dataset.action=input.action;button.dataset.pose=input.action;
-  updateLookTarget();if(!canLook())look={x:0,y:0};else if(lookMoving())wake();
+  updateLookTarget();if(canAdvanceLook()&&lookMoving())wake();
   const ownsFixture=!['walk','lift','land','idle','turn','look','nod','wave','surprise'].includes(input.action),owner=input.token??'direct';
   if(ownsFixture&&fixtureOwner!==owner){clearFixtures();fixtureAnchor=clone(anchor);fixtureOwner=owner;}
   if(input.action==='carryFlower')held=null;
@@ -160,7 +172,7 @@
   if(travel){const t=travel,to=pointOf(t.to),from=t.fromAnchor?.kind==='world'?pointOf(t.fromAnchor):t.from;if(!to){stopTravel();return;}const u=clamp((now-t.start)/t.duration,0,1),e=u*u*(3-2*u),p={x:from.x+(to.x-from.x)*e,y:from.y+(to.y-from.y)*e,scale:from.scale+(to.scale-from.scale)*e};render(p);const distance=Math.hypot(to.x-from.x,to.y-from.y)*e/Math.max(.2,p.scale);pose({action:u<.1?'turn':'walk',phase:'perform',progress:u,elapsed:distance/80*1000,distance,variant:0});if(u>=1){travel=null;t.signal?.removeEventListener('abort',t.cancel);setAnchor(t.to);render(to);pose({action:'idle',phase:'perform',progress:0,elapsed:0});t.resolve(true);}}
   if(localMotion){const m=localMotion,p=clamp((now-m.start)/m.duration,0,1);pose({action:m.action,phase:'perform',progress:p,elapsed:now-m.start,variant:0});if(p>=1){localMotion=null;held=null;clearFixtures();pose({action:'idle',phase:'perform',progress:0});if(m.action==='land')life.interact('landed');life.contextChanged();}}
   if(gazeChanged&&!travel&&!localMotion)pose(lastPose);
-  if(travel||localMotion||lookMoving()&&canLook())wake();
+  if(travel||localMotion||lookMoving()&&canAdvanceLook())wake();
  }
  function wake(){if(!frame&&!document.hidden&&ready&&ownsScene())frame=requestAnimationFrame(tick)}
  const life=StudioCharacterLife.create({getContext:context,chooseSpot,approach,frame:pose,release,getHeld:()=>rig.metrics()?.handProp?.kind||held,random,onError:error=>console.error('Resident scene:',error),relocate:()=>!!current&&(current.x<0||current.x>innerWidth||current.y<0||current.y>innerHeight)});
@@ -182,9 +194,9 @@
    if(mode==='work'&&!drag){const target=boardVisited?{anchor:{kind:'world',...world}}:chooseSpot({id:'idle'});if(target){boardVisited=true;if(previous==='hidden'||!current){setAnchor(target.anchor);render(pointOf(anchor))}else void approach(target).then(()=>life.contextChanged())}else hiddenReason='no-safe-space';}
    else if(!drag){setAnchor(current?{kind:'screen',...current}:null);if(['about','process','detail'].includes(mode)){const target=chooseSpot({id:'idle'});if(target)void approach(target).then(()=>life.contextChanged());else hiddenReason='no-safe-space';}}
   }
-  if(changed||force)life.start();const nowBusy=busy();if(changed||force||nowBusy!==lastBusy){lastBusy=nowBusy;life.contextChanged();}
+  if(changed||force)life.start();const nowBusy=busy(),becameIdle=lastBusy&&!nowBusy;if(changed||force||nowBusy!==lastBusy){lastBusy=nowBusy;life.contextChanged();}
   if(!nowBusy&&!travel&&!drag&&!localMotion&&['detail','about','process'].includes(mode)&&!sceneTarget?.occluder&&(hiddenReason||current&&!free(current,lastPose.action))){life.interact('geometry');const target=chooseSpot({id:'idle'});if(target){hiddenReason=null;void approach(target).then(()=>life.contextChanged());}else hiddenReason='no-safe-space';}
-  if(!travel&&!drag&&!localMotion)render(pointOf(anchor));if(document.hidden){button.dataset.visible='false';fixtures.dataset.visible='false';cancelAnimationFrame(frame);frame=0;}
+  if(!travel&&!drag&&!localMotion)render(pointOf(anchor));if(becameIdle)refreshLook();if(document.hidden){button.dataset.visible='false';fixtures.dataset.visible='false';cancelAnimationFrame(frame);frame=0;}
  }
  function cancelDrag(restore=true){if(!drag)return;const d=drag;drag=null;try{if(button.hasPointerCapture(d.id))button.releasePointerCapture(d.id)}catch{}ignoreClickUntil=performance.now()+600;if(restore&&d.mode===mode){setAnchor(d.anchor);render(pointOf(anchor))}else setAnchor(anchorFor(current));held=null;clearFixtures();land();}
  function land(){localMotion={action:'land',start:performance.now(),duration:effectiveReduced()?1:420};wake();announce(copy().moved);}
@@ -193,13 +205,13 @@
   if(!free(p,'idle')){let found=null;for(const radius of [30,60,100,160,240]){for(let i=0;i<12;i++){const q={...p,x:p.x+Math.cos(i*Math.PI/6)*radius,y:p.y+Math.sin(i*Math.PI/6)*radius};if(free(q,'idle')){found=q;break}}if(found)break}if(found)p=found;else{const fallback=chooseSpot({id:'idle'});if(!fallback){hiddenReason='no-safe-space';life.contextChanged();return;}p=fallback.point;}}
   const target={anchor:anchorFor(p),point:p,action:'idle'};hiddenReason=null;if(animated)void approach(target).then(ok=>{if(ok)land()});else{setAnchor(target.anchor);render(p);land()}
  }
- on(button,'pointerdown',e=>{if(!interactive()||e.button!==0||!e.isPrimary)return;e.stopPropagation();const p=current;if(!p)return;held=rig.metrics()?.handProp?.kind||null;drag={id:e.pointerId,startX:e.clientX,startY:e.clientY,lastX:e.clientX,offsetX:e.clientX-p.x,offsetY:e.clientY-p.y,anchor:clone(anchor),mode,moved:false,scale:p.scale};stopTravel();localMotion=null;life.interact('grab');button.setPointerCapture(e.pointerId);});
+ on(button,'pointerdown',e=>{if(!interactive()||e.button!==0||!e.isPrimary)return;e.stopPropagation();const p=current;if(!p)return;resetLook();held=rig.metrics()?.handProp?.kind||null;drag={id:e.pointerId,startX:e.clientX,startY:e.clientY,lastX:e.clientX,offsetX:e.clientX-p.x,offsetY:e.clientY-p.y,anchor:clone(anchor),mode,moved:false,scale:p.scale};stopTravel();localMotion=null;life.interact('grab');button.setPointerCapture(e.pointerId);});
  on(button,'pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;e.preventDefault();e.stopPropagation();if(!drag.moved&&Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)<4)return;drag.moved=true;selected=false;button.setAttribute('aria-pressed','false');button.dataset.selected='false';hiddenReason=null;const p={x:e.clientX-drag.offsetX,y:e.clientY-drag.offsetY,scale:drag.scale};setAnchor(anchorFor(p));render(p);pose({action:'lift',phase:'perform',progress:.5,elapsed:0,variant:0,sway:clamp((e.clientX-drag.lastX)*.02,-.15,.15)});drag.lastX=e.clientX;});
  on(button,'pointerup',e=>{if(!drag||drag.id!==e.pointerId)return;e.stopPropagation();const d=drag;drag=null;try{button.releasePointerCapture(e.pointerId)}catch{}if(d.moved){ignoreClickUntil=performance.now()+600;placement(current,false)}else{life.interact('drop');life.contextChanged();}});
  on(button,'pointercancel',e=>{e.stopPropagation();cancelDrag(true)});on(button,'lostpointercapture',()=>{if(drag)cancelDrag(true)});
  on(button,'pointerenter',()=>{if(!drag&&!selected)life.interact('hover')});
  on(document,'pointermove',e=>{if(e.pointerType!=='mouse'||!e.isPrimary||!finePointer.matches)return;gazePointer={x:e.clientX,y:e.clientY};updateLookTarget();if(canLook()&&lookMoving())wake();},{passive:true});
- on(document,'pointerout',e=>{if(!e.relatedTarget){gazePointer=null;gazeTarget={x:0,y:0};if(lookMoving())wake();}},{passive:true});
+ on(document,'pointerout',e=>{if(!e.relatedTarget){gazePointer=null;if(!paused&&!externalPause)gazeTarget={x:0,y:0};if(canAdvanceLook()&&lookMoving())wake();}},{passive:true});
  on(document,'pointerdown',e=>{if(e.pointerType!=='mouse'&&(gazePointer||look.x||look.y)){resetLook();if(ownsScene()&&current)pose(lastPose);}},{passive:true});
  on(finePointer,'change',()=>{resetLook();if(ownsScene()&&current)pose(lastPose)});
  on(button,'click',e=>{e.stopPropagation();if(!interactive()||performance.now()<ignoreClickUntil)return;selected=!selected;selectionOrigin=clone(anchor);button.dataset.selected=String(selected);button.setAttribute('aria-pressed',String(selected));life.contextChanged();if(selected){stopTravel();localMotion={action:'nod',start:performance.now(),duration:effectiveReduced()?1:650};wake();}else life.interact('tap');});
@@ -215,7 +227,13 @@
  on(window,'portfolio:entrystate',()=>sync());on(window,'portfolio:entrysettled',()=>sync());on(window,'portfolio:projectstate',()=>{sync();life.contextChanged()});
  on(window,'portfolio:compositionmotion',e=>{compositionMoving=!!e.detail?.active;if(compositionMoving){stopTravel();clearFixtures()}sync();if(!compositionMoving&&!drag)resize();});
  on(window,'portfolio:deskready',()=>sync());on(window,'portfolio:boardframe',()=>{
+  const before=current&&{...current};
   if(ready&&ownsScene()&&!drag&&!travel&&!localMotion)render(pointOf(anchor));
+  // Camera movement changes the projected head even with a stationary pointer.
+  // Debounce the finite gaze refresh; do not introduce an idle camera RAF.
+  if(gazePointer&&current&&before&&(Math.hypot(current.x-before.x,current.y-before.y)>.1||Math.abs(current.scale-before.scale)>.0001)){
+   clearTimeout(gazeSettleTimer);gazeSettleTimer=setTimeout(()=>{gazeSettleTimer=0;refreshLook();},160);
+  }
   if(mode!=='detail')return;const r=geometry()?.front;if(!r)return;
   const signature=[latestKey,r.index,r.left,r.top,r.right,r.bottom].map(x=>typeof x==='number'?Math.round(x*10):x).join('|');
   if(signature!==detailSignature){detailSignature=signature;clearTimeout(detailTimer);detailTimer=setTimeout(()=>{if(mode==='detail'&&!document.hidden&&signature===detailSignature)sync();},160);}
@@ -228,6 +246,6 @@
  on(window,'wheel',()=>{if(mode==='work'){clearTimeout(cameraTimer);cameraTimer=setTimeout(()=>life.interact('camera'),150)}else if(mode==='process')life.interact('process')},{passive:true});
  on(window,'pagehide',()=>{life.stop('pagehide');stopTravel();resetInput();[liveTimer,resizeTimer,cameraTimer,detailTimer].forEach(clearTimeout);cancelAnimationFrame(frame);frame=0;});on(window,'pageshow',()=>sync(true));
  window.portfolioI18n?.subscribe(localize);localize();
- window.portfolioCompanion=Object.freeze({getState:()=>({active:ready&&ownsScene()&&!hiddenReason&&!cardBlocked(),mode,action:lastPose.action,pose:lastPose.action,worldPos:{...world},worldSize,position:clone(current),anchor:clone(anchor),dragging:!!drag?.moved,selected,frameScheduled:!!frame,project:latestKey,materialIndex:latestMaterial,hiddenReason:hiddenReason||(cardBlocked()?'material-clearance':null),fixture:fixtureAnchor?{anchor:clone(fixtureAnchor),position:pointOf(fixtureAnchor),owner:fixtureOwner}:null,held,life:life.getState(),rig:rig.metrics(),legacyRetired:window.portfolioCharacter?.getState().retired}),refresh:()=>sync(true),play:(id,options={})=>{selected=false;return ownsScene()&&life.play(id,options)},pause:value=>{paused=!!value;life.pause(paused)},setExternalPause:value=>{externalPause=!!value;life.contextChanged()},setDebug:value=>{debug=!!value;pose(lastPose)},setReduced:value=>{debugReduced=!!value;life.contextChanged()},seed:value=>{randomSeed=value==null?null:Number(value)>>>0},stop:()=>life.stop('debug'),destroy:()=>{events.abort();life.destroy();stopTravel();cancelAnimationFrame(frame);[liveTimer,resizeTimer,cameraTimer,detailTimer].forEach(clearTimeout);rig.destroy();button.remove();fixtures.remove();help.remove();live.remove();}});
+ window.portfolioCompanion=Object.freeze({getState:()=>({active:ready&&ownsScene()&&!hiddenReason&&!cardBlocked(),mode,action:lastPose.action,pose:lastPose.action,worldPos:{...world},worldSize,position:clone(current),anchor:clone(anchor),dragging:!!drag?.moved,selected,frameScheduled:!!frame,gaze:{look:{...look},target:{...gazeTarget},releasing:!!gazeRelease,following:canLook()},project:latestKey,materialIndex:latestMaterial,hiddenReason:hiddenReason||(cardBlocked()?'material-clearance':null),fixture:fixtureAnchor?{anchor:clone(fixtureAnchor),position:pointOf(fixtureAnchor),owner:fixtureOwner}:null,held,life:life.getState(),rig:rig.metrics(),legacyRetired:window.portfolioCharacter?.getState().retired}),refresh:()=>sync(true),play:(id,options={})=>{selected=false;return ownsScene()&&life.play(id,options)},pause:value=>{paused=!!value;refreshLook();life.pause(paused)},setExternalPause:value=>{externalPause=!!value;refreshLook();life.contextChanged()},setDebug:value=>{debug=!!value;pose(lastPose)},setReduced:value=>{debugReduced=!!value;resetLook();life.contextChanged();if(ownsScene()&&current)pose(lastPose)},seed:value=>{randomSeed=value==null?null:Number(value)>>>0},stop:()=>life.stop('debug'),destroy:()=>{events.abort();resetLook();life.destroy();stopTravel();cancelAnimationFrame(frame);[liveTimer,resizeTimer,cameraTimer,detailTimer].forEach(clearTimeout);rig.destroy();button.remove();fixtures.remove();help.remove();live.remove();}});
  sync();
 })();

@@ -26,7 +26,7 @@
   {name:'scissors',group:2}
  ];
  // CSS crops keep the original transparent source files intact.
- const deskCrops={laptop:[1254,1254,71,17,1104,1229],notebook:[1254,1254,107,15,1011,1226],phone:[1254,1254,306,16,643,1238],airpods:[1254,1254,26,3,1198,1242],pack:[1254,1254,193,2,877,1235],lighter:[1254,1254,377,0,498,1252],pen:[1254,1254,495,0,285,1254],cable:[1254,1254,129,19,980,1213],receipt:[1254,1254,246,4,757,1238],scissors:[1254,1254,85,18,1085,1235]};
+ const deskCrops={laptop:[1254,1254,71,17,1104,1229],notebook:[1254,1254,107,15,1011,1226],phone:[1254,1254,324,34,606,1205],airpods:[1254,1254,26,3,1198,1242],pack:[1254,1254,193,2,877,1235],lighter:[1254,1254,377,0,498,1252],pen:[1254,1254,495,0,285,1254],cable:[1254,1254,129,19,980,1213],receipt:[1254,1254,246,4,757,1238],scissors:[1254,1254,85,18,1085,1235]};
  // Match the unrotated bitmap width, including the transparent crop margin.
  // Browser selection retains enough source pixels for high-density displays.
  const deskSizes=name=>{
@@ -40,7 +40,7 @@
   const desktop={notebook:17,phone:7.6,airpods:16.5,laptop:25.5,pack:7.3,lighter:2.6,pen:2.15,cable:12,receipt:6.8,scissors:13};
   return [`(max-width: 680px) and (max-height: 700px) ${n(shortPhone[name])}vw`,`(max-width: 680px) ${n(phone[name])}vw`,`(max-width: 1000px) and (max-height: 520px) ${name==='laptop'?`min(${n(20)}vw, ${n(33)}svh)`:`${n(landscape[name])}vw`}`,`(max-height: 520px) ${scene(shortDesktop[name],name==='laptop'?35:0)}`,`(max-width: 1000px) ${scene(tablet[name],name==='laptop'?38:0)}`,scene(desktop[name],name==='laptop'?41:0,name==='laptop'?520:0)].join(', ');
  };
- const deskAsset=name=>`/hero/desk/${name==='notebook'||name==='scissors'?'v3':'v2'}`;
+ const deskAsset=name=>`/hero/desk/${name==='phone'?'v4':name==='notebook'||name==='scissors'?'v3':'v2'}`;
  const deskSrcset=name=>[256,384,512,768,1024].map(w=>`${deskAsset(name)}/responsive/${name}-${w}.webp ${w}w`).concat(`${deskAsset(name)}/${name}.webp 1254w`).join(', ');
  const deskObject=({name,label,key,group})=>{
   const tag=label?'button':'div',src=`${deskAsset(name)}/${name}.webp`;
@@ -61,7 +61,7 @@
  // Fold layers reuse the browser-selected bitmap; they must not fetch the full
  // master a second time when a smaller responsive source was selected.
  for(const img of root.querySelectorAll('.desk-cutout>img')){
-  const sync=()=>{if(img.currentSrc)img.parentElement.style.setProperty('--cutout',`url("${img.currentSrc}")`)};
+  const sync=()=>{if(img.currentSrc){const source=`url("${img.currentSrc}")`;img.parentElement.style.setProperty('--cutout',source);if(img.closest('.desk-phone'))img.closest('.desk-phone').style.setProperty('--phone-art',source)}};
   img.addEventListener('load',sync);if(img.complete)sync();
  }
  const overview=document.createElement('div');overview.id='work-overview';overview.innerHTML='<span data-entry-copy="index"></span><p data-entry-copy="hint"></p>';document.body.append(overview);
@@ -161,7 +161,10 @@
  }
  async function openAbout(view='profile'){
   if(!booted||pending||mode==='about')return;
-  selectPhoneView(view);phoneOpener=document.activeElement;
+  selectPhoneView(view);
+  // WebKit touch taps can leave activeElement on BODY or a previous control.
+  // Restore the actual section entry, not that unrelated focus snapshot.
+  phoneOpener=document.getElementById(view==='contact'?'nav-contact':'about-control');
   const from=mode,token=++generation;pending=true;origin='home';hadDetail=false;
   announceTarget('about');
   // The small Home source must not be stretched across the enlarged phone.

@@ -1,6 +1,6 @@
 # About and Contact inside the paper phone
 
-The Instagram-inspired screen belongs to the existing paper-phone object, not to a new page overlay. It uses Dumitru's local avatar and six existing photographs, confirmed work description and location. His personal note describes the photographs he likes: night streets, a lone light, sea sunsets and friends in the frame. It has no invented follower/like counts, verification badge, personal favorites or AI-production copy.
+The Instagram-inspired screen belongs to the existing paper-phone object, not to a new page overlay. It uses Dumitru's local avatar and six existing photographs, confirmed work description and location. His personal note describes the photographs he likes: night streets, a lone light, sea sunsets and friends in the frame. The blue check beside the handle follows his supplied Instagram screenshot and is decorative. It has no invented follower/like counts, personal favorites or AI-production copy.
 
 ## Navigation
 
@@ -25,6 +25,8 @@ The supplied mirror contains inline About media, not an internal photo lightbox.
 `entry-flow.js` owns the physical phone approach/retreat and the `about` scene. `studio-about.js` owns `profile`, `photo` and `contact`, publishing `portfolio:phoneview` with `{view}`. `portfolio-ui.js` uses the current phone view for the shared header. EN/RO/RU labels remain local dictionary data.
 
 Retain the counter-scaled HTML screen from the earlier sharpness fix: text must be laid out at its final displayed dimensions, not magnified from a tiny screen texture. Short landscape screens retain their upright inner layout inside the rotated phone. UI transitions must be cancelable and respect reduced motion.
+
+Home and the enlarged phone use one generated black Pro Max-style paper cutout: `/hero/desk/v4/phone.webp`, with its powered-off screen and damage concentrated at the bottom-left. The same `currentSrc` supplies the noninteractive physical `::after` glass layer above the profile, photos and Contact. `mix-blend-mode: lighten` exposes the artwork's bright fractures over the live screen, and `::before` preserves its opaque photographed camera island. The prop's `isolation: isolate` scopes blending as recommended by Modern Web Guidance's `visual-effects` guide. Both layers turn with the actual phone in landscape and never scroll with its contents. The previous separate reference-glass texture is no longer used. Photos retain mild saturation/contrast adjustment, with no text blur or downscaling. Exact source geometry and generation prompt: [v4 provenance](../site/hero/desk/v4/SOURCE.md).
 
 Save the profile scroll offset before hiding its footer for a photo. The taller photo area can otherwise cause Chromium to clamp the outgoing profile's scroll offset. Restore the footer geometry and saved offset before focusing the returning profile. A fresh phone opening still starts at the top; the Profile/Photos footer buttons deliberately choose their own scroll target.
 

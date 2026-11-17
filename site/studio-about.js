@@ -20,6 +20,7 @@
     copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/>'
   };
   const icon = name => `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[name]}</svg>`;
+  const profileBadge = '<svg class="about-profile-badge" viewBox="0 0 24 24" aria-hidden="true"><path class="about-badge-seal" d="m12 1.5 2.6 2 3.3-.1.9 3.2 2.7 1.9-1.2 3.1 1.2 3.1-2.7 1.9-.9 3.2-3.3-.1-2.6 2-2.6-2-3.3.1-.9-3.2L2.5 15l1.2-3.1-1.2-3.1 2.7-1.9.9-3.2 3.3.1Z"/><path class="about-badge-check" d="m7.7 12 2.8 2.8 5.8-5.9"/></svg>';
   let screen, phone, profile, story, storyImage, contact, footer, panels;
   let photoButtons = [], visible = false, view = 'profile', photo = -1, pending = null;
   let panelMotion = null, onBack = null, profileReturn = null, copyVersion = 0, profileScroll = 0;
@@ -161,7 +162,7 @@
     screen=document.createElement('section');screen.className='about-phone-screen';screen.id='studio-about';
     screen.hidden=true;screen.inert=true;screen.setAttribute('aria-hidden','true');
     screen.innerHTML=`<div class="about-phone-pages">
-      <div class="about-profile-page"><header class="about-phone-topbar"><button type="button" class="about-profile-back about-icon-button" data-about-label="back">${icon('back')}</button><p class="about-phone-handle">_obllako_</p></header>
+      <div class="about-profile-page"><header class="about-phone-topbar"><button type="button" class="about-profile-back about-icon-button" data-about-label="back">${icon('back')}</button><p class="about-phone-handle">_obllako_ ${profileBadge}</p></header>
         <div class="about-phone-profile"><div class="about-profile-summary"><header class="about-profile-heading"><img data-src="${assets}avatar.jpg" width="160" height="160" alt="Dumitru" loading="lazy" fetchpriority="low" decoding="async"><div><h2 tabindex="-1">Dumitru</h2><p data-about-copy="tagline"></p></div></header><p class="about-profile-bio" data-about-copy="bio"></p><p class="about-profile-place" data-about-copy="place"></p></div>
           <h3 class="about-photos-heading" tabindex="-1">${icon('grid')}<span data-about-copy="photos"></span><span class="about-photo-total">6</span></h3>
           <ol class="about-photo-grid" role="list">${Array.from({length:6},(_,i)=>`<li><button type="button" data-photo="${i}"><img data-src="${assets}photo-${i+1}.jpg" width="240" height="300" alt="" loading="lazy" fetchpriority="low" decoding="async"></button></li>`).join('')}</ol>

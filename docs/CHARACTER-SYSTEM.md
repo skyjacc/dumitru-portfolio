@@ -2,7 +2,7 @@
 
 Latest user override (2026-11-17): the SVG resident owns **Work and Detail only**. About/Process stop its scheduler, frames, fixtures and input; returning to Work restores its board anchor. The original Loading/Home walker remains unchanged. Older About/Process placement details below describe the preceding implementation.
 
-The current checkout preserves the original raster walker in Loading and Home. The articulated resident serves Work, About, Process and decorative project Detail; it is hidden and stopped on Home. The user's latest clarification also removes the public pause button and persisted pause preference. These decisions supersede the corresponding Home-unification and public-control requirements in the preserved [original brief](CHARACTER-IMPLEMENTATION-BRIEF.ru.md). This is a local implementation, not a new production deployment; see [DEPLOYMENT.md](../DEPLOYMENT.md). The latest corrective checks are recorded separately from historical integration results.
+The current checkout preserves the original raster walker in Loading and Home. The articulated resident serves Work and decorative project Detail; it is hidden and stopped on Home, About and Process. The user's latest clarification also removes the public pause button and persisted pause preference. These decisions supersede the corresponding Home-unification and public-control requirements in the preserved [original brief](CHARACTER-IMPLEMENTATION-BRIEF.ru.md). This is a local implementation, not a new production deployment; see [DEPLOYMENT.md](../DEPLOYMENT.md). The latest corrective checks are recorded separately from historical integration results.
 
 ## Run and inspect
 
@@ -26,7 +26,7 @@ The viewer is injected by the local Python server from `qa/resident/viewer.js`; 
 | --- | --- |
 | `site/studio-character-rig.js` | One 120×200 articulated SVG skeleton, 32 actions, stable segments, pose rendering, contact/prop metrics and separate body/grip groups. No RAF or timers. |
 | `site/studio-character-life.js` | 27 activities/reactions, one phase clock, finite preparation/performance/finish, weighted choice, history, cooldowns, priorities and effective pause. |
-| `site/studio-companion.js` | SVG position/input owner in Work/About/Process/Detail: world/DOM anchors, approaches, drag/keyboard motion, masks, furniture and observation/debug API. Stopped and noninteractive on Home. |
+| `site/studio-companion.js` | SVG position/input owner in Work/Detail: world/DOM anchors, approaches, drag/keyboard motion, masks, furniture and observation/debug API. Stopped and noninteractive on Home/About/Process. |
 | `site/studio-companion.css` | Pencil color/line scaling, narrow stroke hit regions, focus styling, decorative Detail mode and immediate SVG hiding on Home. No public pause control. |
 | `site/character-runtime.js` | Original Home raster controller. It self-activates on Home and suspends elsewhere; its optional `retire()` API is not called by normal entry/navigation. |
 | `site/entry-flow.js` | Actual loader readiness and `portfolio:loaderhandoff`, plus existing Home/Work/About/Process navigation. |
@@ -43,7 +43,7 @@ The authored figure has an irregular tilted oval, one bowed torso line, long thi
 
 The external box remains 120×200 with floor at local y=188. Torso, upper arm, forearm, thigh and shin lengths are 50, 28, 27, 36 and 38 local units respectively. IK reaches planted contacts; FK arcs handle bend-side transitions. The rig handles facing reflection internally around x=60, including furniture when created. The coordinator must not add another horizontal flip.
 
-Fine-pointer tracking adds a small, smoothed head/neck offset in idle/look/inspect without moving the torso, hands or board anchor. Screen direction is converted to facing-local coordinates once. The finite interpolation stops after settling; pointer exit/blur restore neutral. Home, coarse pointers, reduced motion, developer pause, active manipulation and contact-sensitive scenes do not use this tracking.
+Fine-pointer tracking adds small independent horizontal/vertical head/neck offsets in idle/look/inspect without moving the torso, hands or board anchor. Screen direction is converted to facing-local coordinates once. When an authored scene starts, residual gaze eases to neutral over 200ms without delaying that scene; contact-sensitive choreography removes any remaining gaze before contact. Developer/external pause freezes the last gaze, including an unfinished release. Hidden/ownership changes, direct manipulation and reduced motion reset it. The finite interpolation stops after settling; pointer exit restores neutral. Camera movement debounces a projected-head refresh for a stationary pointer, without a permanent idle RAF.
 
 Line scaling has one owner. The rig does not use `vector-effect: non-scaling-stroke`; the connected CSS/coordinator may supply inverse-scale stroke width. Do not stack both compensation methods.
 
@@ -62,9 +62,13 @@ The rig has 32 rendered actions. The scheduler exposes 23 activities plus four s
 | Creative | `pen`, `plane`, `crumple`, `juggle`: pencil movement, folding/throwing a plane, crumpling a sheet and finite airborne objects. |
 | Exploration | `inspect`, `measure`, `peek`, `fetch`, `carryFlower`: lean toward material, ruler, real-edge peek and ANDRA's flower excursion/placement. |
 
-The activities are a fictional character's behavior, not claims about Dumitru's biography. The coordinator does not rewrite About copy. Contact is still `mailto`; waving at an actual Contact click does not imply a successful message submission.
+The activities are a fictional character's behavior, not claims about Dumitru's biography. The coordinator does not rewrite About copy or control the phone's About/Contact interface. A navigation click does not imply a successful message submission.
 
 Project keys determine motifs: ANDRA can fetch/place a flower; BTB can measure; FKD can hold a small wrench; ORA LENTĂ can inspect a schematic; Bonanza can inspect a menu. Read/note variants 11 and 12 provide menu/schematic drawing. Reordering case cards must not change these associations.
+
+The November 17 motion correction replaces internal work/game/peek/controller pose switches with finite enter/hold/return envelopes. Writing pauses, plane release and flower retrieval received the same continuity treatment. Natural phase changes and interrupted finishes capture the actual authored pose; gaze is added after that capture so it cannot be counted twice. No new animation clock, global joint filter or dependency is introduced.
+
+Coffee exposes transformed `grip`, `sipRim`, `cupBottom`, `sipContact` and `tableTop` points through `rig.metrics().coffee`. The rim meets the face during the sip; the bottom reaches the table before the hand releases. Pushups expose `supportStage`: profile/crouch/palms/weight transfer, sequential lifted steps, plank, then a separate gather-and-rise exit. Planted contacts keep both coordinates; airborne toes leave the contact set. Full-cycle, mirrored and interruption evidence is in the current motion-correction report below.
 
 ## Clock, tokens and interruption
 
@@ -85,10 +89,10 @@ Normal soft interruption finishes a safe movement within the configured limit; d
 | Work | Saved world position/size projected through `portfolioWorkGeometry()` and the native rendered camera. Pan/zoom alone does not rewrite the world position or clamp it to the viewport. |
 | Detail | Selected material's current `front` rectangle and a safe side/height anchor. Decorative only: no tab focus or pointer interception. |
 | Home | Original raster controller and original Home controls; no SVG placement, scheduler activity or input interception. |
-| About / Process | Measured safe screen/DOM positions outside the profile, copy, controls and navigation. |
+| About / Process | No resident placement or animation. Scheduler, fixtures and SVG input are stopped/hidden. |
 | Viewport peek | Explicit viewport-edge anchor; it is not an accidentally fixed Work character. |
 
-The coordinator chooses space using activity footprints and actual protected rectangles. It can choose a compact activity or mark `no-safe-space` instead of covering controls. About/Process use the same owner but are not native Work pins.
+The coordinator chooses space using activity footprints and actual protected rectangles in Work/Detail. It can choose a compact activity or mark `no-safe-space` instead of covering controls. Historical About/Process placement branches are not eligible scene owners.
 
 Native cards share a canvas, so z-index alone cannot place a DOM body behind them. The coordinator masks the rig body against the measured card contour in local coordinates; the separate holding-hand group remains in front. Facing, camera movement and resize are included in this conversion. Viewport-edge and card-edge peek share the rig; the coordinator supplies the actual edge and clipping geometry.
 
@@ -125,5 +129,6 @@ There is no visible public pause button and no persisted character-pause prefere
 - [Rig review](../qa/resident/rig/README.md): six poses beside the original at real interface scale, all-action silhouettes, fixed segments, contacts, wrist props, ownership interruption and deterministic frames.
 - [Scheduler review](../qa/resident/life/README.md): deterministic clock, weighted availability, independent pause causes, stale approach protection, reduced motion and flower-story lifecycle.
 - [Integration review](../qa/resident/integration/README.md): latest Home-preservation/no-public-pause checks and separately labeled historical retirement/shared-owner checks under `connected/` and `scenes/`.
+- [Motion correction](../qa/resident/motion-correction/README.md): reproduced baseline discontinuities, current finite-time/contact/gaze checks, normal-size complete playback and remaining visual-review limits.
 
 Whole-site QA is still being completed. Do not substitute isolated passing counts, historical `qa/board-follow/` or legacy `qa/full-character/` for a fresh navigation/input/mask review. Chromium/WebKit emulation is not physical-device testing. Current assertions and any unresolved observations belong in the integration report; publication status belongs in DEPLOYMENT.md.

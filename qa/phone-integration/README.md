@@ -40,3 +40,9 @@ Generated JSON reports and PNG screenshots remain local (ignored by Git). `repor
 No uncaught browser errors. About↔Contact physical phone position/size drift measured 0 CSS pixels. All contact actions remain reachable by internal scrolling in the short landscape phone. Contact/Photo Back and whole-phone dismissal do not reopen the phone.
 
 These are local browser-emulation checks, not a physical iPhone or published-site check. Chromium clipboard writing was tested against the real browser clipboard; WebKit covers the explicit denied/unavailable fallback instead. External email/Instagram destinations were not activated. The profile/contact screenshots provide visual evidence at all four viewports; physical iOS browser chrome and keyboard behavior remain outside this review.
+
+## Decorative glass / profile badge follow-up
+
+Bounded local smoke after the glass overlay and blue badge: Chromium touch390 12/12, WebKit320 11/11, short landscape 12/12. The physical-phone pseudo-element stays anchored during approach, has `pointer-events:none`, and hides on Home. Photo, photo Back, internal Contact, contact Back and whole-phone Back remain usable; Chromium copy writes the real email. Text is legible in reviewed screenshots, with no horizontal overflow or browser errors. The fixed footer and internal scrolling remain usable at the short landscape size.
+
+Evidence is local/ignored: `glass-report.json` and `glass-<environment>-profile.png`, `-photo.png`, `-contact.png`. The one-off script lives in the OS temporary directory, not the repository. This smoke does not replace the earlier full integration run or physical-device testing.
