@@ -29,6 +29,22 @@
       <div class="project-visit"><p id="project-kind"></p><a id="visit-control" target="_blank" rel="noopener noreferrer"><span>${t('ui.visit')}</span>${paperArrow('visit')}</a></div>
     </div><p id="surface-announcement" class="sr-only" role="status" aria-live="polite"></p>`;
     document.body.append(ui);
+    // The gallery is painted on canvas. Its real HTML counterpart follows the
+    // same selected case and remains an ordinary keyboard list in the overview.
+    const syncCaseSemantics=project=>{
+      const content=document.querySelector('[data-screen-copy]');if(!content)return;
+      const heading=content.querySelector('h1');if(heading)heading.textContent=project?project.name:t('ui.work');
+      let description=content.querySelector('[data-selected-case-description]');
+      if(!description){description=document.createElement('p');description.dataset.selectedCaseDescription='';heading?.after(description);}
+      description.textContent=project?project.description:t('site.description');
+      for(const child of content.children){if(child===heading||child===description)continue;if(child.tagName==='NAV'){child.hidden=!!project;child.inert=!!project;child.setAttribute('aria-label',t('ui.work'));}else{child.hidden=true;child.inert=true;}}
+      content.dataset.case=project?.key||'';
+    };
+    document.addEventListener('click',event=>{
+      const link=event.target.closest('[data-case-link]');if(!link||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+      event.preventDefault();event.stopPropagation();rememberOpener(link,link.dataset.caseLink,event);window.portfolioEntry?.open(link.dataset.caseLink);
+    });
+    const keyboardStyle=document.createElement('style');keyboardStyle.textContent='[data-screen-copy]:focus-within{clip:auto!important;overflow:visible!important;font-size:0;color:transparent}[data-case-link]:focus-visible{position:fixed!important;top:calc(var(--portfolio-nav-bottom,140px) + 16px)!important;left:24px!important;z-index:100!important;padding:12px 18px;font:500 1rem StudioSans,Arial,sans-serif;background:#1b1b1b;color:#fff;outline:2px solid #eee!important;outline-offset:4px;border-radius:18px;text-shadow:none!important;-webkit-text-stroke:0!important}';document.head.append(keyboardStyle);
     const languageToggle=ui.querySelector('#language-toggle'),languageOptions=ui.querySelector('#language-options');
     const nativePopover='popover' in HTMLElement.prototype;
     const languageOpen=()=>nativePopover?languageOptions.matches(':popover-open'):!languageOptions.hidden;
@@ -107,9 +123,8 @@
     workToggle.onclick = () => {
       const entry=window.portfolioEntry,intent=document.body.dataset.entryTarget;
       if(!entry){navigate({action:'overview'});return;}
-      if(entry.pending&&intent==='home')return;
       if(intent==='work'||!intent&&entry.mode==='work'&&!window.portfolioRuntime?.focusedKey){entry.showHome();return;}
-      if(!entry.pending)entry.enterWork();
+      entry.enterWork();
     };
     ui.querySelectorAll('[data-key]').forEach(button=>button.onclick=event=>{const key=button.dataset.key;if(key==='process'||key==='despre'||key==='contact'||window.portfolioRuntime?.focusedKey!==key){rememberOpener(button.classList.contains('nav-pill')?button:workToggle,key,event);if(window.portfolioEntry)portfolioEntry.open(key);else if(key==='contact')location.href='mailto:andrusciac.dumitru@gmail.com';else navigate({key})}});
     ui.querySelector('#return-control').onclick=requestReturn;
@@ -118,13 +133,13 @@
     ui.querySelector('#next-material').onclick=()=>changeMaterial(1);
     document.addEventListener('keydown',e=>{
       if(languageOpen())return;
-      const keyboardProject=window.portfolioRuntime?.focusedKey;
+      const keyboardProject=['work','detail'].includes(window.portfolioEntry?.mode)?window.portfolioRuntime?.focusedKey:null;
       if((e.key==='ArrowLeft'||e.key==='ArrowRight')&&!e.altKey&&!e.ctrlKey&&!e.metaKey&&!window.portfolioRuntime?.helpOpen&&(window.portfolioSurfaces?.count(keyboardProject)||(keyboardProject&&ui.contains(e.target)))){
         e.preventDefault();e.stopImmediatePropagation();if(!e.repeat)changeMaterial(e.key==='ArrowLeft'?-1:1);return;
       }
       if(e.key!=='Escape')return;
       const state=window.portfolioRuntime;
-      const focusedControl=ui.contains(e.target)&&state?.focusedKey;
+      const focusedControl=ui.contains(e.target)&&keyboardProject;
       if(!state?.helpOpen&&!focusedControl)return;
       e.preventDefault();
       e.stopImmediatePropagation();
@@ -141,6 +156,7 @@
       if(!state?.ready)return;
       const customProcess=window.portfolioEntry?.mode==='process',customAbout=window.portfolioEntry?.mode==='about',customSurface=customProcess||customAbout;
       const focusedProject=customSurface?null:data.projects.find(p=>p.key===state.focusedKey);
+      syncCaseSemantics(focusedProject?.portfolioCase?focusedProject:null);
       const returning=!customSurface&&!!(!focusedProject&&lastProject&&(state.flight||state.moving));
       const project=focusedProject||(returning?lastProject:null);
       if(focusedProject)lastProject=focusedProject;
@@ -209,6 +225,8 @@
       }
     };
     i18n.subscribe(()=>{previous='';updateCopy();update()});
+    addEventListener('portfolio:entrystate',()=>{previous='';update()});
+    addEventListener('portfolio:entrysettled',()=>{previous='';update()});
     updateCopy();update();setInterval(update,100);
   });
 })();

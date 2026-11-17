@@ -1,6 +1,6 @@
 /**
  * Adapt the supplied ntch runtime's DATA, preserving its renderer and camera.
- * Only runs against portfolio-ntch/site. The supplied mirror remains untouched.
+ * Only runs against this repository’s site/. The supplied mirror remains untouched.
  * The module edits are bounded so identity/behavior edits can coexist.
  */
 'use strict';
@@ -9,17 +9,10 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const aboutOnly = process.argv.includes('--about-only');
 
-const projectRoot = path.resolve(__dirname, '..');
+const projectRoot = require('./project-root.cjs');
 const site = path.join(projectRoot, 'site');
-if (path.basename(projectRoot) !== 'portfolio-ntch' || path.basename(site) !== 'site') {
-  throw new Error('This adapter only targets the portfolio-ntch/site working copy.');
-}
-const source = path.join(projectRoot, '..', 'portfolio-lab', 'projects.js');
-const sourceText = fs.readFileSync(source, 'utf8');
-const assignment = 'window.PORTFOLIO_PROJECTS = ';
-const assignmentAt = sourceText.indexOf(assignment);
-if (assignmentAt < 0) throw new Error('Own projects data assignment not found.');
-const ownProjects = JSON.parse(sourceText.slice(assignmentAt + assignment.length).trim().replace(/;\s*$/, ''));
+const source = path.join(projectRoot, 'authoring', 'projects.json');
+const ownProjects = JSON.parse(fs.readFileSync(source, 'utf8'));
 if (!Array.isArray(ownProjects) || !ownProjects.length) throw new Error('Expected a non-empty portfolio case array.');
 const projectIds = new Set(['home', 'despre', 'process']);
 for (const project of ownProjects) {
@@ -195,6 +188,7 @@ if (fs.existsSync(path.join(site, 'portfolio-i18n.js'))) {
 }
 // Keep the authored Work positions and compact captions after catalogue refreshes.
 require('./adapt-work-composition.cjs').apply();
+require('./adapt-media-intent.cjs');
 console.log(JSON.stringify({
   caseCount: caseProjects.length,
   boardKeys: boardProjects.map(project => project.key),

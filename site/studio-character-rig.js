@@ -46,6 +46,16 @@
   leftHand:point(31,112),rightHand:point(89,107),leftFoot:point(44,FLOOR),rightFoot:point(76,FLOOR),
   armBends:[1,-1],legBends:[1,-1],prop:null,propHand:'right',propAngle:0,secondary:null,secondaryHand:'left',secondaryAngle:0,particles:[],
   fixture:null,fixtureAmount:1,grip:false,contacts:['leftFoot','rightFoot'],opacity:1};}
+ function flowerExit(from,progress){
+  const p=clamp(progress),base=neutral(),place={...neutral(),hip:point(59,160),angle:.78,headTilt:.5,
+   leftHand:point(57,139),rightHand:point(105,176),prop:'flower',fixture:'flower'};
+  // Lower the actual carried pose, settle the stem on the floor, then release.
+  // An interrupted return must not pick up a flower that is already planted.
+  const planted=!!from.flowerOnGround;
+  const pose=planted?blend(from,base,ease(p),from):p<.68?blend(from,place,ease(p/.6),place):blend(place,base,ease((p-.68)/.32),place);
+  pose.fixture='flower';pose.flowerOnGround=planted||p>=.65;pose.prop=pose.flowerOnGround?null:'flower';
+  return pose;
+ }
  function blend(a,b,t,metadata=b){
   const out={...metadata,armBends:b.armBends,legBends:b.legBends};['hip','leftHand','rightHand','leftFoot','rightFoot'].forEach(k=>out[k]=lerp(a[k],b[k],t));
   ['angle','headTilt','headShift','headLift'].forEach(k=>out[k]=mix(a[k]||0,b[k]||0,t));return out;
@@ -222,12 +232,17 @@
    else if(side===1){pose.angle=.2;pose.leftHand=point(72,20);pose.rightHand=point(101,32);pose.headTilt=.18;pose.hip.x=56;pose.rightFoot.x=74;}
    else{pose.angle=.55;pose.hip.y=122;pose.leftHand=point(99,114);pose.rightHand=point(102,118);pose.headTilt=.45;pose.leftFoot.x=31;pose.rightFoot.x=83;}
   } else if(action==='balance'){
+   const sway=phase==='perform'?cycle*ease(time/350):0;
    pose.hip=point(53,118);pose.angle=-.07;pose.leftFoot=point(47,FLOOR);pose.rightFoot=point(84,148);
-   pose.leftHand=point(7,73+cycle*1.5);pose.rightHand=point(103,68-cycle*1.5);pose.headTilt=-.05;pose.contacts=['leftFoot'];
+   pose.leftHand=point(7,73+sway*1.5);pose.rightHand=point(103,68-sway*1.5);pose.headTilt=-.05;pose.contacts=['leftFoot'];
   } else if(action==='sit'){
    pose.hip=point(47,139);pose.angle=-.08;pose.leftFoot=point(70,FLOOR);pose.rightFoot=point(91,FLOOR);pose.legBends=[-1,-1];
    pose.leftHand=point(33,139);pose.rightHand=point(79,128);pose.fixture='seat';pose.contacts=['seat','leftFoot','rightFoot'];
-   if(phase==='perform'&&v%2){pose.rightFoot=point(91+Math.sin(time/1100)*6,179-Math.sin(time/1100)*4);pose.contacts=['seat','leftFoot'];}
+   if(phase==='perform'&&v%2){
+    const lift=ease(time/650),swing=Math.sin(Math.max(0,time-650)/1100);
+    pose.rightFoot=lerp(pose.rightFoot,point(91+swing*6,179-swing*4),lift);
+    if(time>0)pose.contacts=['seat','leftFoot'];
+   }
   } else if(action==='sketch'||action==='note')pose=writing(action,phase==='perform'?time:0,v);
   else if(action==='read'){
    pose.leftHand=point(58,101);pose.rightHand=point(86,97);pose.headTilt=.25;pose.angle=.045;
@@ -257,7 +272,7 @@
   } else if(action==='juggle'){
    pose.leftHand=point(29,98);pose.rightHand=point(91,98);pose.headTilt=-.14;
    const flying=phase==='perform',phaseOffset=p*(Number(input.repeats)||4)*Math.PI*2;
-   if(flying){pose.particles=[0,1,2].map(i=>{const t=(phaseOffset+i*Math.PI*2/3)%(Math.PI*2);return{kind:'ball',x:60+Math.cos(t)*31,y:95-Math.max(0,Math.sin(t))*76,angle:0};});pose.leftHand.y+=Math.cos(phaseOffset)*3;pose.rightHand.y-=Math.cos(phaseOffset)*3;}
+   if(flying){pose.particles=[0,1,2].map(i=>{const t=(phaseOffset+i*Math.PI*2/3)%(Math.PI*2);return{kind:'ball',x:60+Math.cos(t)*31,y:95-Math.max(0,Math.sin(t))*76,angle:0};});const lift=Math.cos(phaseOffset)*3*ease(time/350);pose.leftHand.y+=lift;pose.rightHand.y-=lift;}
    else{pose.prop='balls';pose.secondary='balls';}
   } else if(action==='measure'){
    const sweep=phase==='perform'?Math.sin(p*Math.PI*2):0;
@@ -274,9 +289,7 @@
     if(phase==='prepare')pose.prop=null;
    }
    if(action==='carryFlower'&&phase==='finish'){
-    const bend=p<.68?ease(clamp(p/.6)):1-ease((p-.68)/.32);pose.hip.y=117+bend*43;pose.angle=bend*.78;
-    pose.rightHand=lerp(point(86,98),point(105,176),bend);pose.headTilt=bend*.5;pose.flowerOnGround=p>=.65;
-    if(p>=.65)pose.prop=null;pose.fixture='flower';
+    pose=flowerExit(pose,p);
    }
    if(input.traveling){
     const walk=poseFor({...input,action:'walk',phase:'perform',progress:0,traveling:false,held:null});
@@ -402,6 +415,8 @@
     // The waving wrist returns around the shoulder, never through the IK root.
     p.leftHand.x+=Math.sin(Math.PI*t)*18;p.grip=!!phaseFrom.grip&&p.grip;
     p.contacts=(p.contacts||[]).filter(k=>phaseFrom.contacts?.includes(k)&&phaseFrom[k]&&p[k]&&distance(phaseFrom[k],p[k])<.001);
+   } else if(input.phase==='finish'&&phaseFrom&&input.action==='carryFlower'){
+    p=flowerExit(phaseFrom,input.progress);p.action='carryFlower';p.phase='finish';p.progress=clamp(input.progress);
    } else if(input.phase==='finish'&&phaseFrom&&!['peek','pushups','coffee','carryFlower'].includes(input.action)){
     const t=ease(clamp(input.progress));p=blend(phaseFrom,neutral(),t,p);
     p.propAngle=mix(phaseFrom.propAngle||0,p.propAngle||0,t);p.secondaryAngle=mix(phaseFrom.secondaryAngle||0,p.secondaryAngle||0,t);
@@ -412,10 +427,15 @@
    if(phaseFrom&&phaseJoints&&['prepare','finish'].includes(input.phase)&&!['coffee','peek','pushups','carryFlower'].includes(input.action)){
     const t=ease(clamp(input.progress));
     const angle=(a,b)=>Math.atan2(b.y-a.y,b.x-a.x),turn=(a,b)=>a+Math.atan2(Math.sin(b-a),Math.cos(b-a))*t;
+    // Raised arms follow one fixed FK arc for the entire stretch. Re-solving a
+    // moving endpoint and choosing its shortest branch each frame can flip by π.
+    const interruptedFold=input.interrupted&&input.phase==='finish',captured=interruptedFold?solve(phaseFrom):null;
+    const destination=input.action==='stretch'||interruptedFold?solve(input.phase==='finish'?neutral():poseFor({...input,progress:1})):j;
     for(const [side,index]of [['left',0],['right',1]])for(const [kind,rootName,middleName,endName,lenA,lenB]of [['arm','shoulder',`${side}Elbow`,`${side}Hand`,28,27],['leg','hip',`${side}Knee`,`${side}Foot`,36,38]]){
-     if(phaseFrom[`${kind}Bends`][index]===p[`${kind}Bends`][index])continue;
-     const a=turn(angle(phaseJoints[rootName],phaseJoints[middleName]),angle(j[rootName],j[middleName]));
-     const b=turn(angle(phaseJoints[middleName],phaseJoints[endName]),angle(j[middleName],j[endName]));
+     const unfinishedFold=captured&&(distance(captured[middleName],phaseJoints[middleName])>.001||distance(captured[endName],phaseJoints[endName])>.001);
+     if(phaseFrom[`${kind}Bends`][index]===p[`${kind}Bends`][index]&&!unfinishedFold)continue;
+     const a=turn(angle(phaseJoints[rootName],phaseJoints[middleName]),angle(destination[rootName],destination[middleName]));
+     const b=turn(angle(phaseJoints[middleName],phaseJoints[endName]),angle(destination[middleName],destination[endName]));
      j[middleName]=point(j[rootName].x+Math.cos(a)*lenA,j[rootName].y+Math.sin(a)*lenA);
      j[endName]=point(j[middleName].x+Math.cos(b)*lenB,j[middleName].y+Math.sin(b)*lenB);
     }

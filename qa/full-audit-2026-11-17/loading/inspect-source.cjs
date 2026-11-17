@@ -1,0 +1,2 @@
+const fs=require('fs');
+for(const f of fs.readdirSync('site/_next/static/chunks').filter(f=>f.endsWith('.js'))){const s=fs.readFileSync('site/_next/static/chunks/'+f,'utf8');for(const term of ['createElement("video")','visibilitychange','preload=','pause()','prewarm','hero-bouquet']){let p=0,c=0;while((p=s.indexOf(term,p))>=0&&c++<5){console.log(f,term,'line',s.slice(0,p).split('\n').length,s.slice(Math.max(0,p-180),p+600));p+=term.length}}}

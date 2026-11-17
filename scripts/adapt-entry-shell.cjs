@@ -1,6 +1,10 @@
 /** Install the authored boot/Home layer without changing the native engine. */
 const fs=require('node:fs'),path=require('node:path');
 const site=path.resolve(__dirname,'../site');
+const recoveryProjects=JSON.parse(fs.readFileSync(path.join(site,'portfolio-data.json'),'utf8')).projects.filter(p=>p.portfolioCase&&/^https:\/\//.test(p.externalUrl)).map(p=>({name:p.name,url:p.externalUrl}));
+const recoveryScript='<script id="entry-recovery-bootstrap">'+fs.readFileSync(path.join(__dirname,'entry-recovery.js'),'utf8').replace('__ENTRY_PROJECTS__',JSON.stringify(recoveryProjects)).replace(/<\/script/gi,'<\\/script')+'</script>';
+const decodeCSS='<style id="entry-image-readiness">.desk-cutout[data-decoded=pending]>img{visibility:hidden!important}.desk-cutout[data-decoded=pending]>.paper-fold{display:none!important}.desk-laptop .desk-cutout[data-decoded=pending]{border:0;min-height:0;background-image:url("/hero/desk/v2/responsive/laptop-preview.webp");background-size:var(--paper-width) var(--paper-height);background-position:var(--paper-bg-x) var(--paper-bg-y);background-repeat:no-repeat}</style>';
+const recoveryCSS=`<style id="entry-recovery-style">html[data-entry-recovery] body{overflow:auto!important}html[data-entry-recovery] body>:not(#entry-recovery):not(script){display:none!important}#entry-recovery{box-sizing:border-box;min-height:100svh;padding:max(28px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom));background:#080808;color:#f0eee7;font:1rem/1.6 system-ui,sans-serif;display:flex;flex-direction:column;justify-content:center;gap:1rem;max-width:48rem;margin:auto}#entry-recovery h1{font:500 clamp(1.5rem,5vw,2.5rem)/1.15 system-ui;margin:0}#entry-recovery p{color:#bbb;margin:0}#entry-recovery div,#entry-recovery nav{display:flex;flex-wrap:wrap;gap:12px}#entry-recovery nav{margin-top:1rem}#entry-recovery a,#entry-recovery button{font:inherit;color:inherit;border:1px solid #666;border-radius:24px;padding:10px 18px;background:#171717;text-decoration:none;cursor:pointer}#entry-recovery :focus-visible{outline:2px solid #fff;outline-offset:4px}</style>`;
 // Reuse the authored responsive rules so preload and <img> select one URL.
 const entrySource=fs.readFileSync(path.join(site,'entry-flow.js'),'utf8');
 const sizesStart=entrySource.indexOf(' const deskCrops='),sizesEnd=entrySource.indexOf(' const deskObject=');
@@ -31,6 +35,11 @@ for(const name of ['index.html','404.html']){const file=path.join(site,name),bef
  s=s.replace(walker,()=>walker+'<script src="/character-runtime.js"></script>');
  s=s.replace(/<script id="loader-keyboard-guard">[\s\S]*?<\/script>/g,'');
  s=s.replace(loader,()=>loader+keyboardGuard);
+ s=s.replace(/<script id="entry-recovery-bootstrap">[\s\S]*?<\/script>/g,'').replace(/<style id="entry-recovery-style">[\s\S]*?<\/style>/g,'');
+ s=s.replace('</head>',recoveryCSS+'\n</head>');
+ s=s.replace(/<style id="entry-image-readiness">[\s\S]*?<\/style>/g,'');
+ s=s.replace('</head>',decodeCSS+'\n</head>');
+ s=s.replace(keyboardGuard,()=>keyboardGuard+recoveryScript);
  if(!s.includes('src="/entry-flow.js"'))s=s.replace('<script src="/portfolio-ui.js">','<script src="/entry-flow.js"></script><script src="/portfolio-ui.js">');
  // Authored scene modules run before the entry controller mounts the desk.
  for(const asset of ['studio-fonts.css','studio-home.css','studio-process.css','studio-about.css','studio-nav.css','studio-language.css','studio-companion.css']){

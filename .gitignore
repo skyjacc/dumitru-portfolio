@@ -58,3 +58,4 @@ Thumbs.db
 **/.env.*
 **/.vercel/
 **/*.pyc
+/qa/audit-fixes-2026-11-17/portable/dumitru-portfolio/

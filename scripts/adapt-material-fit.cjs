@@ -1,7 +1,7 @@
 /** Fit selected portrait materials to the native reserved open room. */
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const root=path.resolve(__dirname,'..');if(path.basename(root)!=='portfolio-ntch')throw Error('Working copy only');
+const root=require('./project-root.cjs');
 const file=path.join(root,'site/_next/static/chunks/1l2px902fb04m.js'),original=fs.readFileSync(file,'utf8');let source=original;
 const before='function eL(e,t){let n=t.length,r=t[0],i=eP(e),a=[];for(let e=0;e<n;e++){let o=eC(eI(e)-i+n/2,n)-n/2;for(let i of[o-n,o,o+n]){let n=Math.abs(i);if(n>=2)continue;let{x:o,k:s}=h(n,r.w,b().halfW),l=v({x:Math.sign(i)*o,y:0,w:r.w*s,h:r.h*s},t[e].w/t[e].h);a.push({i:e,d:i,box:l,alpha:Math.min(1,2-n),dim:f(n),front:n<.5})}}return a.sort((e,t)=>Math.abs(t.d)-Math.abs(e.d))}';
 const after=`function eL(e,t){/* portfolio-portrait-room-fit-v7 */
@@ -28,7 +28,7 @@ if(!source.includes(after)&&source.includes('/* portfolio-portrait-room-fit-')){
 // Match the fixed UI before the first native frame. Keep the inset helper at
 // module scope: the minified column function has its own caption-style `p`.
 replace('safe inset helper for native columns','var p=e.i(89480);let u=null;function h(){','var p=e.i(89480);const portfolioInsetsForColumn=()=>(0,p.safeInsets)();let u=null;function h(){');
-replace('reserve fixed navigation in the native caption column',
+if(!source.includes('portfolioNavTop=innerWidth>=600&&innerWidth>innerHeight&&innerHeight<=520?'))replace('reserve fixed navigation in the native caption column',
  'O=M(a.top+w),R=M(a.bottom-b);return{air:l,',
  'portfolioInsets=portfolioInsetsForColumn(),portfolioNavTop=innerWidth<=680?Math.max(76,portfolioInsets.top+68)+54:innerWidth<=900?Math.max(78,portfolioInsets.top+70)+44:Math.max(24,portfolioInsets.top+16)+44,portfolioSafeTop=(0,n.clientToLayout)(innerWidth/2,portfolioNavTop+12).y,portfolioSafeBottom=(0,n.clientToLayout)(innerWidth/2,innerHeight-Math.max(80,portfolioInsets.bottom+58)).y,O=Math.max(M(a.top+w),M(portfolioSafeTop)),R=Math.min(M(a.bottom-b),M(portfolioSafeBottom));return{air:l,');
 // About closes into its identity composition; other planes unfold from that origin.
@@ -52,3 +52,6 @@ if(!source.includes(noCaption)){
 const barePinLabel='i.BOARD_PROJECTS.forEach((t,n)=>{let i=n===o.index?o.reveal:0;',oldPinLabel='i.BOARD_PROJECTS.forEach((t,n)=>{if(t.key==="despre")return;let i=n===o.index?o.reveal:0;';
 replace('no surface pin labels',source.includes(oldPinLabel)?oldPinLabel:barePinLabel,'i.BOARD_PROJECTS.forEach((t,n)=>{if(t.surface){R[n].shown=0;(0,c.resetFlip)(R[n].flip);return}let i=n===o.index?o.reveal:0;','i.BOARD_PROJECTS.forEach((t,n)=>{if(t.key==="despre"){R[n].shown=0;(0,c.resetFlip)(R[n].flip);return}let i=n===o.index?o.reveal:0;');
 new vm.Script(source);if(fs.readFileSync(file,'utf8')!==original)throw Error('Chunk changed concurrently; rerun');if(source!==original)fs.writeFileSync(file,source);console.log('Native portrait material fit verified');
+
+// Reapply authored project geometry after replacing the owned carousel block.
+require('./adapt-work-composition.cjs').apply();

@@ -5,6 +5,12 @@
     ro: {label:'Despre Dumitru',contactLabel:'Contactează-l pe Dumitru',personal:'Fotografii cu atmosferă: străzi noaptea, un felinar, marea la apus și prieteni în cadru.',tagline:'Design & web',bio:'Proiectez și construiesc site-uri, de la idee la lansare.',place:'Lucrez din România',photos:'Fotografii',instagram:'Instagram',open:'Deschide fotografia',photo:'Fotografia',source:'De pe Instagramul meu',profile:'Profil',back:'Înapoi',backProfile:'Înapoi la profil',previous:'Fotografia anterioară',next:'Fotografia următoare',contact:'Contact',navigation:'Telefon',contactTitle:'Ai un site în minte?',contactIntro:'Spune-mi la ce te gândești.',email:'E-mail',copy:'Copiază adresa',copied:'Adresa a fost copiată',copyFallback:'Selectează adresa pentru a o copia.',emailAddress:'Adresa de e-mail'},
     ru: {label:'О Dumitru',contactLabel:'Связаться с Dumitru',personal:'Люблю атмосферные фото: ночные улицы, одинокий фонарь, море на закате и друзей в кадре.',tagline:'Дизайн и веб',bio:'Проектирую и создаю сайты: от идеи до запуска.',place:'Живу в Румынии',photos:'Фото',instagram:'Instagram',open:'Открыть фото',photo:'Фото',source:'Из моего Instagram',profile:'Профиль',back:'Назад',backProfile:'Назад к профилю',previous:'Предыдущее фото',next:'Следующее фото',contact:'Контакт',navigation:'Телефон',contactTitle:'Есть идея сайта?',contactIntro:'Расскажите, что вы задумали.',email:'Почта',copy:'Скопировать адрес',copied:'Адрес скопирован',copyFallback:'Выделите адрес, чтобы скопировать его.',emailAddress:'Адрес электронной почты'}
   };
+  const photoDescriptions = {
+    en: ['Pink sunset above rooftops, seen through a window.', 'A crescent moon above trees and a parked car.', 'A lit courtyard at night, framed by trees.', 'An ivy-covered wall beside outdoor wooden seating.', 'A narrow alley with colourful graffiti on both walls.', 'A red heart painted on a wall covered in handwritten messages.'],
+    ro: ['Apus roz deasupra acoperișurilor, văzut printr-o fereastră.', 'O semilună deasupra copacilor și a unei mașini parcate.', 'O curte luminată noaptea, încadrată de copaci.', 'Un perete acoperit de iederă, lângă bănci din lemn.', 'O alee îngustă cu graffiti colorat pe ambii pereți.', 'O inimă roșie pictată pe un perete acoperit de mesaje scrise de mână.'],
+    ru: ['Розовый закат над крышами, вид из окна.', 'Месяц над деревьями и припаркованной машиной.', 'Освещённый ночной двор в обрамлении деревьев.', 'Стена, покрытая плющом, рядом с деревянными скамьями.', 'Узкий переулок с цветными граффити на обеих стенах.', 'Красное сердце на стене с рукописными посланиями.']
+  };
+  const photoDescription = index => (photoDescriptions[locale()] || photoDescriptions.en)[index];
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const assets = '/assets/about/instagram/';
   const email = 'andrusciac.dumitru@gmail.com';
@@ -44,15 +50,15 @@
     screen.querySelectorAll('[data-about-copy]').forEach(node => {node.textContent=text[node.dataset.aboutCopy]});
     screen.querySelectorAll('[data-about-label]').forEach(node => {node.setAttribute('aria-label',text[node.dataset.aboutLabel])});
     photoButtons.forEach((button,index) => {
-      button.setAttribute('aria-label',`${text.open} ${index+1}`);
-      button.querySelector('img').alt=`${text.photo} ${index+1} ${text.source.toLowerCase()}`;
+      button.setAttribute('aria-label',`${text.open} ${index+1}: ${photoDescription(index)}`);
+      button.querySelector('img').alt=photoDescription(index);
     });
     if (photo>=0) updatePhoto();
     screen.querySelector('.about-copy-status').textContent='';
   }
   function updatePhoto() {
     storyImage.src=`${assets}photo-${photo+1}.jpg`;
-    storyImage.alt=`${copy().photo} ${photo+1} ${copy().source.toLowerCase()}`;
+    storyImage.alt=photoDescription(photo);
     story.querySelector('.about-photo-count').textContent=`${photo+1} / 6`;
     story.querySelector('.about-photo-previous').disabled=photo===0;
     story.querySelector('.about-photo-next').disabled=photo===5;

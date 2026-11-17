@@ -96,3 +96,4 @@ edit('1l2px902fb04m.js', [
   ['manual story', stopStoryAdvance, '/* portfolio-manual-story */'],
   ['carousel selection API', 'e.s(["carouselGo",0,eD,', 'e.s(["portfolioCarouselMaterial",0,()=>eE?eL(eE.pi,eE.boxes).find(p=>p.front)?.i??0:0,"portfolioCarouselSelect",0,index=>{if(!eE)return;let count=eE.boxes.length;if(index<0||index>=count)return;let turn=eM.get(eE.pi)?.turn||0,delta=((eI(index)-turn+count/2)%count+count)%count-count/2;eD(delta)},"carouselGo",0,eD,'],
 ]);
+require('./adapt-navigation.cjs');

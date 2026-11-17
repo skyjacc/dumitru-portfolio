@@ -1,0 +1,12 @@
+const fs=require('node:fs'),path=require('node:path'),pw=require('C:/Users/oblako/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules/playwright');
+const base=process.env.ORIGIN||'https://dumitru-spatial-portfolio.vercel.app';
+(async()=>{const browser=await pw.webkit.launch({headless:true});const page=await browser.newPage({viewport:{width:1440,height:900}});let result={base,log:[],events:[]};
+try{await page.goto(base,{waitUntil:'commit',timeout:30000});await page.waitForFunction(()=>window.portfolioLoader?.getState().phase==='complete',null,{timeout:45000,polling:100});await page.waitForTimeout(900);
+await page.evaluate(()=>{window.tabAudit=[];window.addEventListener('keydown',e=>{if(e.key==='Tab'){setTimeout(()=>window.tabAudit.push({key:e.key,prevented:e.defaultPrevented,key:portfolioRuntime.focusedKey,mode:portfolioEntry.mode,active:document.activeElement.id||document.activeElement.tagName}),20)}},true);document.activeElement?.blur()});
+for(let i=0;i<4;i++){await page.keyboard.press('Tab');await page.waitForTimeout(1000);result.log.push(await page.evaluate(i=>({step:'home-tab-'+i,mode:portfolioEntry.mode,key:portfolioRuntime.focusedKey,active:document.activeElement.id||document.activeElement.tagName,loader:portfolioLoader.getState().phase}),i));}
+await page.screenshot({path:path.join(__dirname,'public-home-tabs.png'),scale:'css'});
+await page.locator('#work-toggle').click();await page.waitForFunction(()=>portfolioEntry.mode==='work'&&!portfolioEntry.pending&&!portfolioRuntime.moving,null,{timeout:30000,polling:100});await page.evaluate(()=>document.activeElement?.blur());
+for(let i=0;i<8;i++){await page.keyboard.press('Tab');await page.waitForTimeout(1100);const s=await page.evaluate(i=>({step:'work-tab-'+i,mode:portfolioEntry.mode,key:portfolioRuntime.focusedKey,active:document.activeElement.id||document.activeElement.tagName,materialIndex:portfolioRuntime.materialIndex,url:location.pathname}),i);result.log.push(s);console.log(JSON.stringify(s));if(['process','despre'].includes(s.key))await page.screenshot({path:path.join(__dirname,'public-tab-opened-'+s.key+'.png'),scale:'css'});}
+result.events=await page.evaluate(()=>window.tabAudit);
+}catch(e){result.failure=e.stack;result.last=await page.evaluate(()=>({mode:window.portfolioEntry?.mode,loader:window.portfolioLoader?.getState(),active:document.activeElement?.id})).catch(()=>null)}
+fs.writeFileSync(path.join(__dirname,'tab-repro.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));await browser.close();})();

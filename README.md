@@ -50,7 +50,7 @@ Five independent concepts: ANDRA, BTB Mobilă, FKD Auto Service, ORA LENTĂ (fic
 python scripts/serve.py
 ```
 
-The server binds only to `127.0.0.1:8943` and serves the shell for `/work/*` and `/stories/*` routes. Open [the local character viewer](http://127.0.0.1:8943/__character/) to inspect real-site scenes, contacts, pause/reduced motion and seeded selection. Its UI lives outside `site/` and is injected only by this local server. The Vercel project is `dumitru-spatial-portfolio`; publication details are in [DEPLOYMENT.md](DEPLOYMENT.md). Only `site/` is published. The resident changes described here are local, not a new deployment.
+The server binds only to `127.0.0.1:8943` and serves the shell for `/work/*` and `/stories/*` routes. Open [the local character viewer](http://127.0.0.1:8943/__character/) to inspect real-site scenes, contacts, pause/reduced motion and seeded selection. Its UI lives outside `site/` and is injected only by this local server. The Vercel project is `dumitru-spatial-portfolio`; publication details are in [DEPLOYMENT.md](DEPLOYMENT.md). Only `site/` is published. See DEPLOYMENT.md for the exact published commit; local changes are not assumed to be live.
 
 ## Languages
 
@@ -58,7 +58,7 @@ English is the default. A language nav pill matches Work/Process/About and opens
 
 ## Editing and provenance
 
-The source is an exported compiled runtime. Bounded adapters in `scripts/` record native changes; edit existing working bundles through those adapters rather than restoring the supplied originals. Project source data currently comes from `../portfolio-lab/projects.js`.
+The source is an exported compiled runtime. Bounded adapters in `scripts/` record native changes; edit existing working bundles through those adapters rather than restoring the supplied originals. Project source data is versioned in `authoring/projects.json`; no sibling checkout is required. See [authoring/README.md](authoring/README.md) for catalogue updates and portable verification.
 
 `site/entry-flow.js` and `site/entry-flow.css` own the authored shell and transitions. `studio-composition.js` owns Home transforms/input and saved arrangements; `studio-home.css` its current layout; `studio-process.js`/`.css` the standalone Process panel; `studio-about.js`/`.css` the phone's DOM screen; `studio-nav.js`/`.css` illustrated navigation and shared Back; `studio-language.js`/`.css` the language nav pill and whole-label rolling text; `studio-clicks.js` press/click feedback; and `studio-fonts.css` the local font faces. `adapt-entry-shell.cjs` installs these hooks. `adapt-behavior.cjs` owns the native overview bridge, labels, filtering and return behavior. `adapt-studio-render.cjs --hover-only` reapplies calm native hover. `adapt-entry-home.cjs` must run **after any older Home adapter**: it installs the current marker and removes active workbench prop preload paths. `adapt-unframed-work.cjs` reapplies the bounded outer-frame bypass after native module changes; `--check` validates its anchors and syntax. See [scripts/ENTRY.md](scripts/ENTRY.md) for the reapply order and public APIs.
 

@@ -1,0 +1,315 @@
+[
+  {
+    "id": "andra",
+    "title": "ANDRA",
+    "category": "Floral · web & motion",
+    "year": "2026",
+    "status": "Concept independent",
+    "description": "Flori, animație și contact direct cu atelierul.",
+    "role": [
+      "Direcție vizuală",
+      "Design web",
+      "Dezvoltare",
+      "Motion cu AI"
+    ],
+    "url": "https://andra-floral-concept.vercel.app/",
+    "accent": "#c13649",
+    "cover": "assets/projects/andra/cover.webp",
+    "coverAlt": "ANDRA — pagina principală a conceptului",
+    "materials": [
+      {
+        "id": "website",
+        "title": "Din atelier, pe ecran",
+        "caption": "Pagina principală",
+        "type": "image",
+        "src": "assets/projects/andra/desktop.webp",
+        "alt": "Site ANDRA, desktop: buchet animat, galerie de lucrări și pașii unei comenzi",
+        "fit": "contain"
+      },
+      {
+        "id": "rotation",
+        "title": "Un buchet în mișcare",
+        "caption": "Buchet în mișcare · AI",
+        "type": "video",
+        "src": "assets/hero-bouquet-hd.mp4",
+        "poster": "assets/projects/andra/bouquet-poster.webp",
+        "previewPoster": "assets/projects/andra/bouquet-preview.svg",
+        "alt": "Buchet roz și crem care se rotește",
+        "fit": "contain",
+        "warm": true
+      },
+      {
+        "id": "mobile",
+        "title": "Aceeași poveste, pe mobil",
+        "caption": "Versiunea mobilă",
+        "type": "image",
+        "src": "assets/projects/andra/mobile.webp",
+        "alt": "Versiunea mobilă a conceptului ANDRA",
+        "fit": "contain"
+      },
+      {
+        "id": "bloom",
+        "title": "Înainte de prima floare",
+        "caption": "Înflorire · animație AI",
+        "type": "video",
+        "src": "assets/projects/andra/bloom.mp4",
+        "poster": "assets/projects/andra/bloom-poster.webp",
+        "alt": "Trei flori se deschid lent",
+        "fit": "contain"
+      }
+    ],
+    "position": {
+      "x": -780,
+      "y": -430
+    },
+    "width": 580,
+    "height": 380
+  },
+  {
+    "id": "btb",
+    "title": "BTB Mobilă",
+    "category": "Mobilier · experiență 3D",
+    "year": "2026",
+    "status": "Concept independent",
+    "description": "O bucătărie 3D, cu detalii și etape de asamblare.",
+    "role": [
+      "Design de experiență",
+      "Scenă 3D",
+      "Interacțiuni",
+      "Dezvoltare"
+    ],
+    "url": "https://btb-mobila-concept.vercel.app/",
+    "accent": "#d7c4a0",
+    "cover": "assets/projects/btb/cover.webp",
+    "coverAlt": "BTB Mobilă — pagina principală a conceptului",
+    "materials": [
+      {
+        "id": "website",
+        "title": "Un spațiu de explorat",
+        "caption": "Bucătărie 3D interactivă",
+        "type": "image",
+        "src": "assets/projects/btb/desktop.webp",
+        "alt": "Concept BTB Mobilă: bucătărie 3D cu puncte pentru detalii",
+        "fit": "contain"
+      },
+      {
+        "id": "assembly",
+        "title": "Cum prinde formă",
+        "caption": "Etapele de asamblare",
+        "type": "image",
+        "src": "assets/projects/btb/assembly.webp",
+        "alt": "Bucătărie BTB în timpul asamblării, cu corpurile suspendate parțial deschise",
+        "fit": "contain"
+      },
+      {
+        "id": "detail",
+        "title": "Mai aproape de detalii",
+        "caption": "Nișă și materiale",
+        "type": "image",
+        "src": "assets/projects/btb/detail.webp",
+        "alt": "Vedere apropiată a nișei din bucătăria BTB",
+        "fit": "contain"
+      },
+      {
+        "id": "mobile",
+        "title": "Spațiu și pe mobil",
+        "caption": "Versiunea mobilă",
+        "type": "image",
+        "src": "assets/projects/btb/mobile.webp",
+        "alt": "Versiunea mobilă a experienței BTB",
+        "fit": "contain"
+      }
+    ],
+    "position": {
+      "x": 720,
+      "y": -410
+    },
+    "width": 580,
+    "height": 380
+  },
+  {
+    "id": "fkd",
+    "title": "FKD Auto Service",
+    "category": "Auto · servicii & solicitări",
+    "year": "2026",
+    "status": "Concept independent",
+    "description": "Servicii auto și un formular demonstrativ de solicitare.",
+    "role": [
+      "Design UI/UX",
+      "Dezvoltare",
+      "Flux de solicitare"
+    ],
+    "url": "https://fkd-concept-cluj.vercel.app/",
+    "accent": "#2866bc",
+    "cover": "assets/projects/fkd/cover.webp",
+    "coverAlt": "FKD Auto Service — pagina principală a conceptului",
+    "materials": [
+      {
+        "id": "website",
+        "title": "De la diagnoză la reparație",
+        "caption": "Servicii și contact",
+        "type": "image",
+        "src": "assets/projects/fkd/desktop.webp",
+        "alt": "Concept FKD: servicii auto, fotografie din atelier și contact",
+        "fit": "contain"
+      },
+      {
+        "id": "request",
+        "title": "Mașina. Problema. Contactul.",
+        "caption": "Formular demonstrativ · alegerea mașinii",
+        "type": "image",
+        "src": "assets/projects/fkd/request.webp",
+        "alt": "Selectarea mașinii în formularul demonstrativ FKD",
+        "fit": "contain"
+      },
+      {
+        "id": "summary",
+        "title": "Totul, înainte de trimitere",
+        "caption": "Rezumat local · fără trimitere",
+        "type": "image",
+        "src": "assets/projects/fkd/summary.webp",
+        "alt": "Rezumatul local al unei solicitări demonstrative FKD",
+        "fit": "contain"
+      },
+      {
+        "id": "mobile",
+        "title": "La îndemână",
+        "caption": "Versiunea mobilă",
+        "type": "image",
+        "src": "assets/projects/fkd/mobile.webp",
+        "alt": "Pagina principală FKD pe mobil",
+        "fit": "contain"
+      }
+    ],
+    "position": {
+      "x": -840,
+      "y": 420
+    },
+    "width": 580,
+    "height": 380
+  },
+  {
+    "id": "ora",
+    "title": "ORA LENTĂ",
+    "category": "Hospitality · concept editorial",
+    "year": "2026",
+    "status": "Concept independent · brand fictiv",
+    "description": "Un refugiu imaginar la munte, cu un plan de sejur.",
+    "role": [
+      "Identitate de concept",
+      "Design web",
+      "Dezvoltare",
+      "Planificator de sejur"
+    ],
+    "url": "https://ora-lenta-concept.vercel.app/",
+    "accent": "#819575",
+    "cover": "assets/projects/ora/cover.webp",
+    "coverAlt": "ORA LENTĂ — pagina principală a conceptului",
+    "materials": [
+      {
+        "id": "website",
+        "title": "Ai timp. În sfârșit.",
+        "caption": "Pagina principală",
+        "type": "image",
+        "src": "assets/projects/ora/desktop.webp",
+        "alt": "Concept ORA LENTĂ: refugiu la munte și mesajul Ai timp",
+        "fit": "contain"
+      },
+      {
+        "id": "rooms",
+        "title": "Alege ritmul șederii",
+        "caption": "Prezentarea camerelor",
+        "type": "image",
+        "src": "assets/projects/ora/rooms.webp",
+        "alt": "Camerele demonstrative din conceptul ORA LENTĂ",
+        "fit": "contain"
+      },
+      {
+        "id": "planner",
+        "title": "De la idee la plan",
+        "caption": "Plan de sejur demonstrativ",
+        "type": "image",
+        "src": "assets/projects/ora/planner.webp",
+        "alt": "Planificator demonstrativ de sejur ORA LENTĂ",
+        "fit": "contain"
+      },
+      {
+        "id": "mobile",
+        "title": "Un refugiu de buzunar",
+        "caption": "Versiunea mobilă",
+        "type": "image",
+        "src": "assets/projects/ora/mobile.webp",
+        "alt": "Pagina ORA LENTĂ pe mobil",
+        "fit": "contain"
+      }
+    ],
+    "position": {
+      "x": 740,
+      "y": 440
+    },
+    "width": 580,
+    "height": 380
+  },
+  {
+    "id": "bonanza",
+    "title": "Bonanza",
+    "category": "Restaurant · evenimente · cazare",
+    "year": "2026",
+    "status": "Concept independent",
+    "description": "Restaurant, evenimente și cazare, cu trasee clare de explorat.",
+    "role": [
+      "Direcție vizuală",
+      "Design web",
+      "Dezvoltare",
+      "Fluxuri de solicitare"
+    ],
+    "url": "https://bonanza-concept-cluj.vercel.app/",
+    "accent": "#ac4930",
+    "cover": "assets/projects/bonanza/cover.webp",
+    "coverAlt": "Bonanza — pagina principală a conceptului",
+    "materials": [
+      {
+        "id": "website",
+        "title": "La masă. La povești.",
+        "caption": "Pagina principală",
+        "type": "image",
+        "src": "assets/projects/bonanza/desktop.webp",
+        "alt": "Concept Bonanza: clădirea restaurantului și cele trei direcții ale site-ului",
+        "fit": "contain"
+      },
+      {
+        "id": "gallery",
+        "title": "Locul, în imagini",
+        "caption": "Galerie de fotografii",
+        "type": "image",
+        "src": "assets/projects/bonanza/gallery.webp",
+        "alt": "Galeria de fotografii din conceptul Bonanza",
+        "fit": "contain"
+      },
+      {
+        "id": "events",
+        "title": "O zi de ținut minte",
+        "caption": "Evenimente · formular demonstrativ",
+        "type": "image",
+        "src": "assets/projects/bonanza/events.webp",
+        "alt": "Prezentarea evenimentelor și solicitarea demonstrativă Bonanza",
+        "fit": "contain"
+      },
+      {
+        "id": "mobile",
+        "title": "Trei trasee, un ecran mic",
+        "caption": "Versiunea mobilă",
+        "type": "image",
+        "src": "assets/projects/bonanza/mobile.webp",
+        "alt": "Pagina Bonanza pe mobil",
+        "fit": "contain"
+      }
+    ],
+    "position": {
+      "x": 0,
+      "y": 860
+    },
+    "width": 580,
+    "height": 380
+  }
+]

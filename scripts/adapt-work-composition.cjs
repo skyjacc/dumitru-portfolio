@@ -19,7 +19,7 @@ function ringPins(count){
 }
 
 function apply(check=false){
-  const root=path.resolve(__dirname,'..');if(path.basename(root)!=='portfolio-ntch')throw Error('Working copy only');
+  const root=require('./project-root.cjs');
   const file=path.join(root,'site/_next/static/chunks/1l2px902fb04m.js');
   const before=fs.readFileSync(file,'utf8');let after=before;
   const replace=(label,from,to)=>{if(after.includes(to))return;if(after.split(from).length!==2)throw Error(label+': expected one anchor');after=after.replace(from,to)};
@@ -54,7 +54,7 @@ function apply(check=false){
     after=after.slice(0,a)+patched+after.slice(b);
   }
   if(!after.includes('/* portfolio-portrait-front-v2 */'))replace('portrait tall media footer clearance','surfaceY=0,items=[],spread=0;\nif(isAbout){','surfaceY=0,items=[],spread=0;\n/* portfolio-portrait-front-v1 */if(portrait&&!isAbout&&project.portfolioCase)room.h=Math.max(80/viewScale,room.h-2*(0,a.captionFooterInset)()/zoom);\nif(isAbout){');
-  if(!after.includes('else if(portrait&&project.portfolioCase)'))replace('portrait selected material width','else if(aspect<.8){let blend=(0,c.smoothstep)','else if(portrait&&project.portfolioCase){let blend=(0,c.smoothstep)((0,c.clamp01)(1-n)),width=Math.min(innerWidth*.8/viewScale,2*room.halfW),height=Math.min(room.h,width/aspect);l={...l,w:(0,c.lerp)(l.w,height*aspect,blend),h:(0,c.lerp)(l.h,height,blend)}}\nelse if(aspect<.8){let blend=(0,c.smoothstep)');
+  if(!after.includes('else if(portrait&&project.portfolioCase)')&&!after.includes('else if((portrait||innerHeight<=520&&innerWidth>=600)&&project.portfolioCase)'))replace('portrait selected material width','else if(aspect<.8){let blend=(0,c.smoothstep)','else if(portrait&&project.portfolioCase){let blend=(0,c.smoothstep)((0,c.clamp01)(1-n)),width=Math.min(innerWidth*.8/viewScale,2*room.halfW),height=Math.min(room.h,width/aspect);l={...l,w:(0,c.lerp)(l.w,height*aspect,blend),h:(0,c.lerp)(l.h,height,blend)}}\nelse if(aspect<.8){let blend=(0,c.smoothstep)');
   replace('short portrait reclaimed heading space','/* portfolio-portrait-front-v1 */if(portrait&&!isAbout&&project.portfolioCase)room.h=Math.max(80/viewScale,room.h-2*(0,a.captionFooterInset)()/zoom);','/* portfolio-portrait-front-v2 */if(portrait&&!isAbout&&project.portfolioCase){room.h=Math.max(80/viewScale,room.h-2*(0,a.captionFooterInset)()/zoom);if(short){const saved=window.portfolioSafeArea,safeTop=saved?.width===innerWidth&&saved?.height===innerHeight?saved.top:142,point=(0,o.clientToLayout)(innerWidth/2,safeTop+20),top=(0,o.warp)(point.x,point.y).y,center=i.SCREEN.h/2-(0,a.focusLift)((0,a.captionExtra)(project,!0)),bottom=center+room.h*zoom/2;if(top<center-room.h*zoom/2){room.h=(bottom-top)/zoom;surfaceY=((top+bottom)/2-center)/zoom}}}');
   replace('short portrait selected material center','height=Math.min(room.h,width/aspect);l={...l,w:','height=Math.min(room.h,width/aspect);l={...l,y:(0,c.lerp)(l.y,surfaceY,blend),w:');
   const oldBacking='!function(e,t,n,r=1){let{colors:i}=(0,p.basics)(),a=(0,u.isSnowFrozen)(),o=(0,m.prefersReducedMotion)();n=x(n);let s=.035*t.w;e.alpha=r,e.fillRect(t.x,t.y,t.w,t.h,i.bg,t.r),e.snow({x:t.x+s,y:t.y+s,w:t.w-2*s,h:t.h-2*s,r:Math.max(0,t.r-s)},i.fg,.08,.5,(0,g.staticField)(n,o)),e.strokeRect(t.x,t.y,t.w,t.h,t.r,1,(0,c.withAlpha)(i.fg,.25)),o||a||(0,f.redrawIn)((0,g.staticFieldIn)(n))}(e,O,r,S)';
@@ -103,6 +103,7 @@ function apply(check=false){
   if(fs.readFileSync(file,'utf8')!==before)throw Error('Concurrent native bundle edit');
   if(check&&after!==before)throw Error('Work composition adapter must be applied');
   if(!check&&after!==before)fs.writeFileSync(file,after);
+  require('./adapt-landscape-fit.cjs').apply(check);
   console.log(check?'Work composition anchors verified.':'Open-centre project rings, compact captions and live companion geometry installed.');
 }
 module.exports={ringPins,diamondPins:ringPins,apply};

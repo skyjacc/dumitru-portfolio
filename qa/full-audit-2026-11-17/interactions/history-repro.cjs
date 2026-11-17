@@ -1,0 +1,13 @@
+const fs=require('node:fs'),path=require('node:path'),pw=require('C:/Users/oblako/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules/playwright');
+const base=process.env.ORIGIN||'http://127.0.0.1:8943',out=path.join(__dirname,base.startsWith('https')?'public-history-repro':'local-history-repro');fs.mkdirSync(out,{recursive:true});
+(async()=>{let browser=await pw.chromium.launch({headless:true}),page=await browser.newPage({viewport:{width:1440,height:900}}),log=[];page.setDefaultTimeout(15000);
+const snap=async(label)=>{const s=await page.evaluate(()=>({url:location.href,mode:window.portfolioEntry?.mode,pending:window.portfolioEntry?.pending,key:window.portfolioRuntime?.focusedKey,moving:window.portfolioRuntime?.moving,phone:window.portfolioAbout?.getState(),processVisible:!!document.querySelector('#studio-process')&&!document.querySelector('#studio-process').hidden,processRows:[...document.querySelectorAll('.process-step')].map(e=>({opacity:getComputedStyle(e).opacity,r:e.getBoundingClientRect().toJSON()})),history:history.length}));log.push({label,...s});console.log(JSON.stringify({label,...s}));await page.screenshot({path:path.join(out,label+'.png'),scale:'css'});};
+const wait=mode=>page.waitForFunction(m=>portfolioEntry.mode===m&&!portfolioEntry.pending&&!portfolioRuntime.moving,mode,{timeout:30000});
+try{
+await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000});await page.waitForFunction(()=>portfolioLoader.getState().phase==='complete',null,{timeout:45000});await wait('home');
+await page.locator('#work-toggle').click();await wait('work');await page.evaluate(()=>portfolioEntry.open('andra'));await wait('detail');await page.locator('#process-control').click();await wait('process');await page.waitForTimeout(1000);await snap('01-process-over-andra');
+await page.goBack({waitUntil:'domcontentloaded'});await page.waitForTimeout(3000);await snap('02-browser-back-while-process');
+await page.locator('#studio-back').click();await page.waitForTimeout(1500);await snap('03-app-back-after-browser-back');
+await page.goto(base+'/work/despre/1',{waitUntil:'domcontentloaded',timeout:60000});await page.waitForFunction(()=>portfolioLoader.getState().phase==='complete',null,{timeout:45000});await page.waitForTimeout(2500);await snap('04-indexed-about-route');
+await page.goto(base+'/work/process/1',{waitUntil:'domcontentloaded',timeout:60000});await page.waitForFunction(()=>portfolioLoader.getState().phase==='complete',null,{timeout:45000});await page.waitForTimeout(2500);await snap('05-indexed-process-route');
+}catch(e){log.push({failure:e.stack});console.error(e.stack)}fs.writeFileSync(path.join(out,'report.json'),JSON.stringify({base,log},null,2));await browser.close();})();
