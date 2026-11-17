@@ -1,6 +1,6 @@
 # Dumitru — spatial portfolio
 
-Source/review repository. Start with [the handoff guide](docs/HANDOFF.md) for the architecture and [the character system guide](docs/CHARACTER-SYSTEM.md) for the current local resident implementation. The latest correction preserves the original Home walker and removes the public pause button; its targeted checks are recorded separately from the earlier implementation review in [the resident review](qa/resident/README.md). The current motion correction and paper-phone update were published on 2026-11-17 from commit 0947124; see [DEPLOYMENT.md](DEPLOYMENT.md) for the immutable release and public verification.
+Source/review repository. Start with [the handoff guide](docs/HANDOFF.md) for the architecture and [the character system guide](docs/CHARACTER-SYSTEM.md) for the current resident implementation. The latest correction preserves the original Home walker and removes the public pause button; its targeted checks are recorded separately from the earlier implementation review in [the resident review](qa/resident/README.md). The current audit corrections and WebKit video presentation fix were published on 2026-11-18 from commit 875b227; see [DEPLOYMENT.md](DEPLOYMENT.md) for the immutable release and public verification.
 
 Live site: https://dumitru-spatial-portfolio.vercel.app/
 
@@ -68,7 +68,7 @@ The Kernjosh Loading/Home/Work reference was inspected read-only at `C:/Users/ob
 
 ## Verification
 
-- Current local resident: [rig geometry and visual proof](qa/resident/rig/README.md), [scheduler lifecycle checks](qa/resident/life/README.md), and [integration QA](qa/resident/integration/README.md). Whole-site checks are still being collected; isolated module passes and older character reports do not certify the assembled rewrite or a physical phone.
+- Historical resident foundation: [rig geometry and visual proof](qa/resident/rig/README.md), [scheduler lifecycle checks](qa/resident/life/README.md), and [integration QA](qa/resident/integration/README.md). Current assembled correction evidence is in [the audit-fix report](qa/audit-fixes-2026-11-17/README.md); the older isolated reports do not certify a physical phone.
 - Interactive character and open-centre rings: `qa/interactive-companion/`. Covers spacing and projected bounds, pointer/keyboard movement, finite pose animations, project/material reactions, saved position/camera return and small-screen placement. Earlier inert-character and diamond-layout expectations are superseded.
 - Work field, transitions and paper project controls: `qa/work-redesign/README.md`. Uniform all-state outer framing, guarded Work/Process handoffs, stable diamond growth, three finite companion poses, manual paper thumbnails and portrait caption/footer separation. Final material checks cover all five cases and short/narrow phone viewports; public-release evidence is recorded alongside the report.
 - Project media clarity: `qa/project-clarity/README.md`. All 20 materials checked in mobile Chromium/WebKit; five mobile previews recaptured at DPR 3, FKD desktop/request/summary at DPR 2 without baked browser rails. Logical card sizes remain independent of image density. Whole-page screenshots still contain small text in fit mode; View site opens the full website.

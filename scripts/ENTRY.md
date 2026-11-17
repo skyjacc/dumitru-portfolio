@@ -128,7 +128,7 @@ Work gestures retain their clamped camera rather than snapping zoom back to the 
 
 The scroll regression came from gesture settlement magnetizing to the old Home pin and routing that implicit selection through GO HOME. At 1440×900, Explore → wait 900ms → pointer `(634,444)` → twelve wheel events of `deltaY=-200`, 70ms apart, reproduced the unwanted return. The fix changes native selection/settlement; it does not disable wheel, drag or pinch. Focused-project wheel protection remains in place.
 
-While `workOverviewActive && !focusedKey`, the renderer and hit test omit non-case objects (`despre` and `process`). Those objects remain accessible from navigation and render when focused. Native case labels use viewport-sized type: 13px portrait and 15px otherwise. Existing object positions and hit regions stay intact.
+While `workOverviewActive && !focusedKey`, the renderer and hit test omit non-case objects (`despre` and `process`). Those objects remain legacy catalogue data only; authored navigation and keyboard ownership exclude their retired native surfaces. Native case labels use viewport-sized type: 13px portrait and 15px otherwise. Existing object positions and hit regions stay intact.
 
 The earlier `window.portfolioSurfaces` native phone/Process planes remain legacy catalogue data; see `SURFACES.md` for their historical API/assets. Active About and Process navigation use the authored DOM modules instead, without changing the native project renderer.
 

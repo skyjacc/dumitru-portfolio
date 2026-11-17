@@ -17,6 +17,7 @@ This pass addresses the confirmed findings and bounded improvements from `qa/ful
 | C3 — conflicting current-state docs | README, ENTRY and HANDOFF now defer publication state to DEPLOYMENT.md and agree on character ownership. |
 | PERF-01 — unnecessary Home payload | Reviewed q94 laptop exports with identical alpha; defer hidden covers; late decode keeps a complete preview. Controlled cold Home resources: 3.73MB → 1.84MB. `loading/`. |
 | PERF-02 — mobile rear videos fetch immediately | Poster-first selected-material loading; full HD files retained. `loading/`. |
+| Release follow-up — WebKit supplies transparent video frames | Mount the selected player before play with its full natural backing, keep the poster until actual pixels exist, and bound empty-frame probes to eight attempts. `loading/video-presentation/`. |
 | Photo descriptions | Factual per-photo alt descriptions in EN/RO/RU, used by both grid and photo viewer. 18 descriptions and three viewer matches checked in WebKit. |
 
 ## Verification and scope
@@ -30,3 +31,9 @@ Modern Web Guidance was applied for motion, accessibility, form-factor adaptatio
 Noindex and direct email/Instagram contact remain intentional review-site boundaries. Project screenshots retain their original languages; live portfolio interface/captions are translated. The five external case sites were not rewritten in this pass.
 
 Publication details and exact runtime commit are recorded in the repository root `DEPLOYMENT.md`. Generated captures, video, JSON and the isolated clone are local QA artifacts, excluded from Git/Vercel. Runtime, adapter source, portable catalogue and written/reproducible checks are committed.
+
+## Final publication — 18 November 2026
+
+Runtime `875b227` is live at https://dumitru-spatial-portfolio.vercel.app/; immutable release: https://dumitru-spatial-portfolio-7ipzrh9sl.vercel.app/ . Vercel reports READY with aliases assigned. Twenty public file hash/size checks match the release manifest. Final navigation smoke passes 35/35 in Chromium desktop and 35/35 in WebKit touch, with no page errors: [navigation report](public/navigation/875b227/README.md). Selected-video pixels and screenshots were checked in both engines: [media report](public/loading/875b227/README.md).
+
+The earlier `08e070a` verification is preserved separately: playback time advanced in WebKit but its selected material was blank. That visual failure triggered the additional correction and is not counted as a successful video presentation test. Final release evidence is separated by commit.

@@ -92,4 +92,3 @@ Applied installed skill's search/retrieve process. Searches: `optimize loading p
 - **motion:** used “Keep the final state” and reduced-motion guidance to verify that stopping animations leaves usable static views. The user's explicit removal of the pause control was respected; no unsolicited UI recommendation to re-add it.
 
 This is an audit; no guide-backed implementation changes are claimed.
-
