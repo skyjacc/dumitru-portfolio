@@ -1,6 +1,6 @@
 # Dumitru — spatial portfolio
 
-Source/review repository. Start with [the handoff guide](docs/HANDOFF.md) for the architecture and [the character system guide](docs/CHARACTER-SYSTEM.md) for the current resident implementation. The latest correction preserves the original Home walker and removes the public pause button; its targeted checks are recorded separately from the earlier implementation review in [the resident review](qa/resident/README.md). The current audit corrections and WebKit video presentation fix were published on 2026-11-18 from commit 875b227; see [DEPLOYMENT.md](DEPLOYMENT.md) for the immutable release and public verification.
+Source/review repository. Start with [the handoff guide](docs/HANDOFF.md) for the architecture and [the character system guide](docs/CHARACTER-SYSTEM.md) for the current resident implementation. The latest character correction preserves the original Home walker and removes the public pause button; its targeted checks are recorded separately from the earlier implementation review in [the resident review](qa/resident/README.md). The current release, published on 2026-11-20 from commit 00c2c46, fixes Home-key ownership in fields, active-scene main landmarks, and localized touch instructions without changing the design. See [the targeted review](qa/input-fixes-2026-11-20/README.md) and [DEPLOYMENT.md](DEPLOYMENT.md) for the immutable release and public verification. The earlier audit and WebKit video corrections remain included.
 
 Live site: https://dumitru-spatial-portfolio.vercel.app/
 

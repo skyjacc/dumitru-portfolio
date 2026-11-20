@@ -1,8 +1,21 @@
 # Опубликованная версия
 
-Дата: **18 ноября 2026** (Europe/Moscow).
+Дата: **20 ноября 2026** (Europe/Moscow).
 
-## Текущий релиз: исправления полного аудита
+## Текущий релиз: три исправления после обзора
+
+- Публичный сайт: **https://dumitru-spatial-portfolio.vercel.app/**
+- Неизменяемая сборка: https://dumitru-spatial-portfolio-f7yhek1xz.vercel.app/
+- ID: `dpl_GNUD75KHzPUeEWHR3w6hQuqU5ZpU`, статус **READY**, target `production`, framework `null`. Оба прежних alias назначены, `aliasError: null`.
+- Runtime-коммит: [`00c2c46a74b3aec8328b89c86e01068b8580a0fa`](https://github.com/skyjacc/dumitru-portfolio/commit/00c2c46a74b3aec8328b89c86e01068b8580a0fa), ветка `codex/portfolio-review`. Следующий коммит документации фиксирует публичную проверку и не меняет runtime.
+- Из runtime изменён только `site/entry-flow.js`: Home уступает редактируемым/составным элементам; авторские сцены имеют основную область `main` с сохранением `inert`; Work показывает touch-подсказку EN/RO/RU по типу основного указателя. Дизайн и время анимаций сохранены.
+- Опубликованы **278 файлов**, **62 676 900 байт** из `site/`; manifest — локально `qa/input-fixes-2026-11-20/manifest.json`.
+- Локально: **20/20 + 11/11** targeted Chromium/WebKit проверки клавиатуры и сцен; **35/35 + 35/35** навигация с обычными анимациями; **113/113** проверки подсказок на пяти конфигурациях экрана. Ошибок JavaScript не зафиксировано. Это эмуляция touch, не физический iPhone.
+- Сверка публикации: **6/6** SHA1/размеров — `entry-flow.js`, `index.html` и `404.html` совпали с локальным manifest на основном и неизменяемом доменах.
+- На публичном домене: **37/37** targeted проверки (Chromium **23/23**, WebKit touch **14/14**), включая Home/email, фактическое дерево доступности, EN/RO/RU подсказки, фото/материалы и возврат. Ошибок JavaScript нет. Public smoke использует reduced motion; обычные переходы проверены локально. [Публичный отчёт](qa/input-fixes-2026-11-20/public/README.md).
+- [Отчёт исправлений](qa/input-fixes-2026-11-20/README.md). Соприкосновение двух подписей в горизонтальном Work зафиксировано отдельно; геометрия галереи не входила в эти три правки.
+
+## Предыдущий релиз: исправления полного аудита — 18 ноября 2026
 
 - Публичный сайт: **https://dumitru-spatial-portfolio.vercel.app/**
 - Неизменяемая сборка: https://dumitru-spatial-portfolio-7ipzrh9sl.vercel.app/

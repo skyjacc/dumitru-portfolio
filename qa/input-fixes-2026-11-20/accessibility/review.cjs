@@ -78,6 +78,13 @@ async function run(engine, mobile) {
     await click('#process-control');await settled('process');await landmark('Process');
     await page.screenshot({path:path.join(out,engine+'-process.png')});
     await click('#work-toggle');await settled('work');await landmark('Work');
+    const expectedHints=mobile?{en:'Drag to explore · Pinch to zoom',ro:'Trage pentru a explora · Zoom cu două degete',ru:'Перетаскивайте пространство · Масштаб двумя пальцами'}:{en:'Drag to explore · Scroll to zoom',ro:'Trage pentru a explora · Scroll pentru zoom',ru:'Перетаскивайте пространство · Колесо меняет масштаб'};
+    for(const locale of ['en','ro','ru']) {
+      await page.evaluate(locale=>portfolioI18n.setLocale(locale),locale);
+      const hint=await page.locator('#work-overview [data-entry-copy="hint"]').textContent();
+      check(`${mobile?'touch':'mouse'} Work hint ${locale}`,hint===expectedHints[locale],{actual:hint,expected:expectedHints[locale]});
+    }
+    await page.evaluate(()=>portfolioI18n.setLocale('en'));
     await page.screenshot({path:path.join(out,engine+'-work.png')});
     await page.evaluate(()=>portfolioEntry.open('andra'));await settled('detail');await landmark('Detail ANDRA');
     await click('#next-material');await page.waitForFunction(()=>portfolioRuntime.materialIndex===1);
