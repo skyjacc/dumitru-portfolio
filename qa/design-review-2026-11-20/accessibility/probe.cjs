@@ -1,0 +1,25 @@
+const fs=require('node:fs'),path=require('node:path');
+const pw=require(process.env.PLAYWRIGHT_MODULE||'C:/Users/oblako/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/node_modules/playwright');
+const out=__dirname;const engine=process.env.ENGINE||'chromium';
+(async()=>{
+const browser=await pw[engine].launch({headless:true});
+const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2,reducedMotion:'reduce'});
+const results={engine,errors:[],states:[]};page.on('pageerror',e=>results.errors.push(e.message));
+await page.addInitScript(()=>{Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:()=>Promise.reject(new DOMException('Denied','NotAllowedError'))}})});
+const state=async name=>{const s=await page.evaluate(()=>({entry:portfolioEntry.mode,pending:portfolioEntry.pending,phone:portfolioAbout.getState(),focus:{id:document.activeElement.id,cls:document.activeElement.className,hidden:!!document.activeElement.closest('[hidden],[inert],[aria-hidden="true"]')},width:innerWidth,scrollWidth:document.documentElement.scrollWidth,title:document.title,lang:document.documentElement.lang}));results.states.push({name,...s});return s;};
+const settled=mode=>page.waitForFunction(mode=>portfolioEntry.mode===mode&&!portfolioEntry.pending,mode);
+await page.goto(process.env.ORIGIN||'https://dumitru-spatial-portfolio.vercel.app/',{waitUntil:'commit'});await page.waitForFunction(()=>window.portfolioLoader?.getState().phase==='complete',null,{timeout:45000});await settled('home');await state('home');
+await page.locator('#nav-contact').click();await settled('about');await page.locator('.about-copy-email').click();await state('copy-denied');
+await page.screenshot({path:path.join(out,engine+'-copy-fallback.png')});
+await page.keyboard.press('Home');await settled('home');await state('home-key-in-email');
+await page.screenshot({path:path.join(out,engine+'-home-key-result.png')});
+await page.locator('#about-control').click();await settled('about');
+results.accessibility=await page.locator('body').ariaSnapshot();
+await page.evaluate(()=>document.documentElement.style.fontSize='200%');await page.waitForTimeout(500);await state('font200-about');await page.screenshot({path:path.join(out,engine+'-font200-about.png')});
+await page.locator('.about-nav-contact').click();await page.waitForTimeout(200);await state('font200-contact');await page.screenshot({path:path.join(out,engine+'-font200-contact.png')});
+results.fonts=await page.evaluate(()=>[...document.querySelectorAll('#studio-title,.about-profile-bio,#studio-process-title,.process-step-description p,.nav-pill')].slice(0,15).map(e=>({text:e.textContent.slice(0,40),font:getComputedStyle(e).fontSize})));
+await page.evaluate(()=>document.documentElement.style.fontSize='');await page.locator('#process-control').click();await settled('process');await state('process');
+results.processAccessibility=await page.locator('body').ariaSnapshot();
+await page.setViewportSize({width:720,height:450});await page.waitForTimeout(500);await page.screenshot({path:path.join(out,engine+'-zoom-equivalent-process.png')});
+fs.writeFileSync(path.join(out,engine+'-probe.json'),JSON.stringify(results,null,2));await browser.close();console.log(JSON.stringify({engine,states:results.states,errors:results.errors}));
+})().catch(e=>{console.error(e);process.exitCode=1});

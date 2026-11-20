@@ -7,11 +7,13 @@
   ru:{hello:'Привет, я',role:'Я создаю сайты.',work:'Работы',about:'Обо мне',load:'Открываю студию',ready:'Можно начинать',slow:'Пространство загружается чуть дольше.',continue:'Войти в студию',index:'Работы',hint:'Перетаскивайте пространство · Колесо меняет масштаб',back:'Назад в студию',process:'Процесс',failed:'Пространство ещё загружается. Можно открыть сами проекты по ссылкам.'}
  };
  COPY.en.clickHere='Click here';COPY.ro.clickHere='Apasă aici';COPY.ru.clickHere='Нажми здесь';
+ COPY.en.touchHint='Drag to explore · Pinch to zoom';COPY.ro.touchHint='Trage pentru a explora · Zoom cu două degete';COPY.ru.touchHint='Перетаскивайте пространство · Масштаб двумя пальцами';
+ const coarsePointer=matchMedia('(pointer: coarse)');
  const copy=()=>COPY[I.locale]||COPY.en;
  const pathIsDetail=/^\/(work|stories)\//.test(location.pathname);
  const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
  const nav=detail=>dispatchEvent(new CustomEvent('portfolio:navigate',{detail}));
- const root=document.createElement('section');root.id='studio-home';root.setAttribute('aria-labelledby','studio-title');
+ const root=document.createElement('section');root.id='studio-home';root.setAttribute('role','main');root.setAttribute('aria-labelledby','studio-title');
  const deskObjects=[
   {name:'notebook',label:'process',key:'process',group:0},
   {name:'phone',group:0},
@@ -156,7 +158,9 @@
   dispatchEvent(new CustomEvent('portfolio:entrystate',{detail:{mode}}));
  };
  const introductions={en:'<span>Hey, I’m <strong>Dumitru.</strong> I turn <em>ideas</em> into websites.</span>',ro:'<span>Salut, sunt <strong>Dumitru.</strong> Transform <em>ideile</em> în site-uri.</span>',ru:'<span>Привет, я <strong>Dumitru.</strong> Превращаю <em>идеи</em> в сайты.</span>'};
- const syncCopy=()=>{document.querySelectorAll('[data-entry-copy]').forEach(el=>el.textContent=copy()[el.dataset.entryCopy]);root.querySelector('#enter-work').setAttribute('aria-label',copy().work);root.querySelector('#studio-title').innerHTML=introductions[I.locale]||introductions.en;loader?.setAttribute('aria-label',copy().load);loader?.querySelector('[role=progressbar]')?.setAttribute('aria-label',copy().load);loader?.querySelector('[data-loader-status]')?.replaceChildren(document.createTextNode(copy().load))};
+ const syncWorkHint=()=>{overview.querySelector('[data-entry-copy="hint"]').textContent=copy()[coarsePointer.matches?'touchHint':'hint']};
+ coarsePointer.addEventListener('change',syncWorkHint);
+ const syncCopy=()=>{document.querySelectorAll('[data-entry-copy]').forEach(el=>el.textContent=copy()[el.dataset.entryCopy]);syncWorkHint();root.querySelector('#enter-work').setAttribute('aria-label',copy().work);root.querySelector('#studio-title').innerHTML=introductions[I.locale]||introductions.en;loader?.setAttribute('aria-label',copy().load);loader?.querySelector('[role=progressbar]')?.setAttribute('aria-label',copy().load);loader?.querySelector('[data-loader-status]')?.replaceChildren(document.createTextNode(copy().load))};
  I.subscribe(syncCopy);syncCopy();root.inert=true;
  const nativeReady=()=>!!window.portfolioRuntime?.ready;
  function waitForNative(timeout=12000){return new Promise(resolve=>{const start=performance.now();const tick=()=>{if(nativeReady())return resolve(true);if(performance.now()-start>=timeout)return resolve(false);setTimeout(tick,70)};tick()})}
@@ -351,7 +355,9 @@
  // Home wheel/touch belongs to the cyclic composition controller. Work is explicit.
  document.addEventListener('wheel',e=>{if(pending){e.preventDefault();e.stopImmediatePropagation()}},{passive:false,capture:true});
  document.addEventListener('keydown',e=>{if(['process','about'].includes(mode)&&e.key==='Escape'){if(mode==='about'&&['photo','contact'].includes(window.portfolioAbout?.getState()?.view))return;e.preventDefault();e.stopImmediatePropagation();back()}},true);
- document.addEventListener('keydown',e=>{if((e.key==='Home'||(e.key==='Escape'&&mode==='work'&&!window.portfolioRuntime?.focusedKey&&!window.portfolioRuntime?.helpOpen))&&!e.ctrlKey&&!e.metaKey){e.preventDefault();e.stopImmediatePropagation();showHome()}},true);
+ // Home belongs to text/caret navigation and composite widgets before the scene.
+ const ownsHomeKey=e=>e.composedPath().some(node=>node instanceof HTMLElement&&(node.isContentEditable||node.matches('input,textarea,select,[role="textbox"],[role="combobox"],[role="slider"],[role="spinbutton"],[role="tablist"],[role="menu"],[role="listbox"],[role="tree"],[role="grid"]')));
+ document.addEventListener('keydown',e=>{const home=e.key==='Home'&&!e.altKey&&!e.shiftKey&&!e.isComposing&&!ownsHomeKey(e);if(!e.defaultPrevented&&(home||(e.key==='Escape'&&mode==='work'&&!window.portfolioRuntime?.focusedKey&&!window.portfolioRuntime?.helpOpen))&&!e.ctrlKey&&!e.metaKey){e.preventDefault();e.stopImmediatePropagation();showHome()}},true);
  setInterval(()=>{
   if(booted&&!pending&&queuedIntent){const target=queuedIntent;queuedIntent=null;if(target==='work')void enterWork();else void open(target);return;}
   if(booted&&!pending)rememberScene();
